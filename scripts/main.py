@@ -16,8 +16,7 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('-c', '--csv', help='CSV file containing rules',
                         required=True)
-    parser.add_argument('-f', '--filename', help='JSON file containing data',
-                        required=True)
+    parser.add_argument('-f', '--filename', help='JSON file containing data')
     args = parser.parse_args()
 
     # read csv
@@ -39,7 +38,7 @@ def main():
     # get values for all variables we will need for evaluation
     variable_dict = {}
     for var in variable_set:
-        variable_dict[var] = get_json_var(args.filename, var)
+        variable_dict[var] = get_data_from_ce(var)
 
     # partially define dict accessor to abstract it for the evaluator
     variable_getter = partial(get_val_from_dict, variable_dict)
