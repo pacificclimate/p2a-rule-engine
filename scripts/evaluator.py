@@ -1,14 +1,15 @@
 import operator
 
 
-def sub_str_value(data, pt_d, variable_getter):
-    if 'rule_' in data:
-        # rule, return parse tree
-        return pt_d[data]
+def get_symbol_value(symbol, rules, variable_getter):
+    """Given the name of a terminal symbol in an rule expression, return either
+       the parse tree for that symbol if it is a rule either the value of that
+       symbol if it is a variable.
+    """
+    if 'rule_' in symbol:
+        return rules[symbol]
     else:
-        # variable, return value
-        # this portion will likely change with the introduction of CE data
-        return variable_getter(data)
+        return variable_getter(symbol)
 
 
 def cond_operand(cond, t_val, f_val):
@@ -23,7 +24,7 @@ def evaluate_parse_tree(pt, pt_d, variable_getter):
     if not isinstance(pt, tuple):
         if isinstance(pt, str):
             # string, needs substitution
-            return evaluate_parse_tree(sub_str_value(pt, pt_d, variable_getter),
+            return evaluate_parse_tree(get_symbol_value(pt, pt_d, variable_getter),
                                        pt_d,
                                        variable_getter)
         else:
