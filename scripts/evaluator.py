@@ -2,13 +2,13 @@ import operator
 
 
 operands = {
-    '+' : operator.add,
-    '-' : operator.sub,
-    '*' : operator.mul,
-    '/' : operator.truediv,
-    '>' : operator.gt,
+    '+': operator.add,
+    '-': operator.sub,
+    '*': operator.mul,
+    '/': operator.truediv,
+    '>': operator.gt,
     '>=': operator.ge,
-    '<' : operator.lt,
+    '<': operator.lt,
     '<=': operator.le,
     '==': operator.eq,
     '&&': operator.and_,
@@ -47,7 +47,9 @@ def evaluate_rule(rule, rules, variable_getter):
         # base case
         if not isinstance(expression, tuple):
             if isinstance(expression, str):
-                return evaluate_expression(get_symbol_value(expression, rules, variable_getter))
+                return evaluate_expression(get_symbol_value(expression,
+                                                            rules,
+                                                            variable_getter))
             else:
                 return expression
 
@@ -55,7 +57,8 @@ def evaluate_rule(rule, rules, variable_getter):
         operand = expression[0]
 
         if operand in operands:
-            return operands[operand](evaluate_expression(expression[1]), evaluate_expression(expression[2]))
+            return operands[operand](evaluate_expression(expression[1]),
+                                     evaluate_expression(expression[2]))
         elif operand == '!':
             return not evaluate_expression(expression[1])
         elif operand == '?':

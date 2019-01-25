@@ -1,7 +1,6 @@
-# likely that this is where the calls CE backend will live
-
 import csv
 import json
+
 
 def get_val_from_dict(dict, val):
     """Given a dictionary key name return the associated value"""
