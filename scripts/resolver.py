@@ -39,15 +39,13 @@ class RuleParser(Parser):
     """Parse through a series of Lex tokens and produce a parse tree"""
     tokens = RuleLexer.tokens
 
-    # still unsure about how 'correct' this section is
     precedence = (
         ('left', 'CONDITIONAL_OPERATOR', ':'),
         ('left', 'AND', 'OR'),
-        ('left', '>', '<'),
-        ('left', 'GREATER_THAN_EQUAL', 'LESS_THAN_EQUAL'),
+        ('right', '!'),
+        ('left', '>', '<', 'GREATER_THAN_EQUAL', 'LESS_THAN_EQUAL'),
         ('left', '+', '-'),
-        ('left', '*', '/'),
-        ('right', '!')
+        ('left', '*', '/')
     )
 
     def __init__(self):
