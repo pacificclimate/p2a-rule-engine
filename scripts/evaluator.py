@@ -1,4 +1,5 @@
 import operator
+from decimal import Decimal
 
 
 operands = {
@@ -44,14 +45,12 @@ def evaluate_rule(rule, rules, variable_getter):
 
     def evaluate_expression(expression):
         """Evaluate the given expression."""
+        print(expression)
         # base case
-        if not isinstance(expression, tuple):
-            if isinstance(expression, str):
-                return evaluate_expression(get_symbol_value(expression,
-                                                            rules,
-                                                            variable_getter))
-            else:
-                return expression
+        if isinstance(expression, float) or isinstance(expression, int):
+            return Decimal(expression)
+        elif isinstance(expression, Decimal):
+            return expression
 
         # check operation
         operand = expression[0]
@@ -65,4 +64,12 @@ def evaluate_rule(rule, rules, variable_getter):
             return cond_operator(evaluate_expression(expression[1]),
                                  evaluate_expression(expression[2]),
                                  evaluate_expression(expression[3]))
+        elif isinstance(expression, str):
+            return evaluate_expression(get_symbol_value(expression,
+                                                        rules,
+                                                        variable_getter))
+        else:
+            print('Unable to process expression')
+            return None
+
     return evaluate_expression(rule)
