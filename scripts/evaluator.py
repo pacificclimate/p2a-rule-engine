@@ -27,7 +27,10 @@ def get_symbol_value(symbol, rules, variable_getter):
         return variable_getter(symbol)
 
 
-def cond_operand(cond, t_val, f_val):
+def cond_operator(cond, t_val, f_val):
+    """Mimic the functionality of the conditional operator
+       'cond ? t_val : f_val'
+    """
     if cond:
         return t_val
     else:
@@ -35,28 +38,28 @@ def cond_operand(cond, t_val, f_val):
 
 
 def evaluate_rule(rule, rules, variable_getter):
-    def evaluate_symbol(symbol):
-        """Given a variable return the value
+    """This method uses a helper method to recursively compute the value of the
+       rule expression.
+    """
 
-           This method recursively navigates a parse tree and once it reaches the
-           leaves it evaluates the expression.
-        """
+    def evaluate_expression(expression):
+        """Evaluate the given expression."""
         # base case
-        if not isinstance(symbol, tuple):
-            if isinstance(symbol, str):
-                return evaluate_symbol(get_symbol_value(symbol, rules, variable_getter))
+        if not isinstance(expression, tuple):
+            if isinstance(expression, str):
+                return evaluate_expression(get_symbol_value(expression, rules, variable_getter))
             else:
-                return symbol
+                return expression
 
         # check operation
-        operand = symbol[0]
+        operand = expression[0]
 
         if operand in operands:
-            return operands[operand](evaluate_symbol(symbol[1]), evaluate_symbol(symbol[2]))
+            return operands[operand](evaluate_expression(expression[1]), evaluate_expression(expression[2]))
         elif operand == '!':
-            return not evaluate_symbol(symbol[1])
+            return not evaluate_expression(expression[1])
         elif operand == '?':
-            return cond_operand(evaluate_symbol(symbol[1]),
-                                evaluate_symbol(symbol[2]),
-                                evaluate_symbol(symbol[3]))
-    return evaluate_symbol(rule)
+            return cond_operator(evaluate_expression(expression[1]),
+                                 evaluate_expression(expression[2]),
+                                 evaluate_expression(expression[3]))
+    return evaluate_expression(rule)

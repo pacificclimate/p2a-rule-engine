@@ -7,12 +7,12 @@ from data_acquisition import get_val_from_dict, get_json_var, read_csv
 
 
 def print_dict(d):
+    """Print out dictionary values in a more human readable format"""
     for key, value in d.items():
         print('Key: {0}\nValue: {1}\n'.format(key, value))
 
 
 def main():
-    # I expect this will be reworked into method params
     parser = ArgumentParser()
     parser.add_argument('-c', '--csv', help='CSV file containing rules',
                         required=True)
