@@ -1,0 +1,6 @@
+# control coverage.py
+[run]
+    source = scripts
+
+[report]
+    fail_under = 50
