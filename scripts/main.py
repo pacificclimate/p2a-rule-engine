@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 from functools import partial
 
 from resolver import build_parse_tree
-from evaluator import evaluate_parse_tree
+from evaluator import evaluate_rule
 from data_acquisition import get_val_from_dict, get_json_var, read_csv
 
 
@@ -47,7 +47,7 @@ def main():
     # evaluate parse trees
     result_dict = {}
     for rule, pt in parse_tree_dict.items():
-        result_dict[rule] = evaluate_parse_tree(pt, parse_tree_dict,
+        result_dict[rule] = evaluate_rule(pt, parse_tree_dict,
                                                 variable_getter)
 
     # print for now
