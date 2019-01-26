@@ -6,7 +6,11 @@ from statistics import mean
 
 variable_options = {
     'temp': {'min': 'tasmin', 'max': 'tasmax'},
-    'prec': 'pr'
+    'prec': 'pr',
+    'dg05': 'gdd',
+    'nffd': 'fdETCCDI',
+    # 'pass': '?'
+    'dl18': 'hdd'
 }
 
 time_of_year_options = {
@@ -95,10 +99,8 @@ def get_ce_data(var_name):
     # hard coded for now
     date = '20100101-20391231'
 
-    # endpoint + api we will use
-    request_type = 'multistats'
-    url_endpoint = 'https://services.pacificclimate.org/marmot/api/{}'.format(
-        request_type)
+    # endpoint
+    url_endpoint = 'https://services.pacificclimate.org/marmot/api/'
 
     # deconstruct variable name
     var, toy, ia_agg, spat_agg, enstime = var_name.split('_')
@@ -106,7 +108,7 @@ def get_ce_data(var_name):
     if var == 'prec':
         return get_val_from_keys(
             requests.get(
-                url_endpoint,
+                url_endpoint + 'multistats',
                 params=build_url_params(
                     time_of_year_options[toy]['time'],
                     variable_options[var],
@@ -117,7 +119,7 @@ def get_ce_data(var_name):
         return mean([
             get_val_from_keys(
                 requests.get(
-                    url_endpoint,
+                    url_endpoint + 'multistats',
                     params=build_url_params(
                         time_of_year_options[toy]['time'],
                         variable_options[var]['max'],
@@ -126,14 +128,50 @@ def get_ce_data(var_name):
                 date),
             get_val_from_keys(
                 requests.get(
-                    url_endpoint,
+                    url_endpoint + 'multistats',
                     params=build_url_params(
                         time_of_year_options[toy]['time'],
-                        variable_options[var]['min'],
+                        variable_options[var]['mean'],
                         time_of_year_options[toy]['timescale'])).json(),
                 spat_agg_options[spat_agg],
                 date)])
-
+    elif var == 'dg05':
+        return get_val_from_keys(
+            requests.get(
+                url_endpoint + 'multistats',
+                params=build_url_params(
+                    0,
+                    variable_options[var],
+                    'yearly')).json(),
+                spat_agg_options[spat_agg],
+                '20110101-20400101')
+    # elif var == 'nffd':
+    #     print(
+    #         requests.get(
+    #             url_endpoint + 'multistats',
+    #             params=build_url_params(
+    #                 0,
+    #                 'fdETCCDI',
+    #                 'yearly')).json())
+    # elif var == 'pass':
+    #     print(
+    #         requests.get(
+    #             url_endpoint + 'multistats',
+    #             params=build_url_params(
+    #                 0,
+    #                 'fdETCCDI',
+    #                 'yearly')).json())
+    elif var == 'dl18':
+        return get_val_from_keys(
+            requests.get(
+                url_endpoint + 'multistats',
+                params=build_url_params(
+                    0,
+                    variable_options[var],
+                    'yearly')).json(),
+                spat_agg_options[spat_agg],
+                '20110101-20400101')
+                
 
 def get_variables(var_name):
     """Given a variable name return the value by lookup table or by querying
