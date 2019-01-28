@@ -3,8 +3,7 @@ from functools import partial
 
 from resolver import build_parse_tree
 from evaluator import evaluate_rule
-from data_acquisition import get_val_from_dict, get_json_var, read_csv, \
-    get_variables
+from data_acquisition import get_val_from_dict, read_csv, get_variables
 
 
 def print_dict(d):
@@ -17,7 +16,8 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('-c', '--csv', help='CSV file containing rules',
                         required=True)
-    parser.add_argument('-f', '--filename', help='JSON file containing data')
+    parser.add_argument('-d', '--date-range', help='30 year period for data',
+                        required=True)
     args = parser.parse_args()
 
     # read csv
@@ -39,7 +39,7 @@ def main():
     # get values for all variables we will need for evaluation
     collected_variables = {}
     for var in variables:
-        collected_variables[var] = get_variables(var)
+        collected_variables[var] = get_variables(var, args.date_range)
 
     # partially define dict accessor to abstract it for the evaluator
     variable_getter = partial(get_val_from_dict, collected_variables)
