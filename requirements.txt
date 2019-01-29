@@ -1,7 +1,10 @@
 atomicwrites==1.2.1
 attrs==18.2.0
+certifi==2018.11.29
+chardet==3.0.4
 coverage==4.5.2
 flake8==3.6.0
+idna==2.8
 mccabe==0.6.1
 more-itertools==5.0.0
 pluggy==0.8.1
@@ -13,5 +16,7 @@ pytest-cov==2.6.1
 pytest-flake8==1.0.3
 python-dateutil==2.7.5
 pytz==2018.9
+requests==2.21.0
 six==1.12.0
 sly==0.3
+urllib3==1.24.1
