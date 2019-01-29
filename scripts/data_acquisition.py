@@ -9,7 +9,7 @@ variable_options = {
     'prec': 'pr',
     'dg05': 'gdd',
     'nffd': 'fdETCCDI',
-    # 'pass': '?'
+    'pass': 'pr', # this variable is missing from the ensemble?
     'dl18': 'hdd'
 }
 
@@ -33,10 +33,15 @@ time_of_year_options = {
     'dec': {'time': 11, 'timescale': 'monthly'},
 }
 
-data_options = {
+spatial_options = {
     's0p': 'min',
     's100p': 'max',
     'smean': 'mean'
+}
+
+data_options = {
+    'iamean': 'mean',
+    'iastddev': 'stdev'
 }
 
 date_options = {
@@ -102,16 +107,17 @@ def get_ce_data(var_name, date_range):
     """Parse a given variable name and into parameters that are used to query
        the Climate Explorer backend.
     """
-    variable, time_of_year, inter_annual_var, data, percentile = var_name.split('_')
+    variable, time_of_year, inter_annual_var, \
+        spatial, ensemble_percentile = var_name.split('_')
 
     if variable == 'temp':
         # special case for temp because we have to use tasmin and tasmax together
-        tasmin = get_period_data(data_options[data], date_range,
+        tasmin = get_period_data(data_options[inter_annual_var], date_range,
                     request_data(
                         variable_options[variable]['min'],
                         time_of_year_options[time_of_year]['time'],
                         time_of_year_options[time_of_year]['timescale']))
-        tasmax = get_period_data(data_options[data], date_range,
+        tasmax = get_period_data(data_options[inter_annual_var], date_range,
                     request_data(
                         variable_options[variable]['max'],
                         time_of_year_options[time_of_year]['time'],
@@ -119,7 +125,7 @@ def get_ce_data(var_name, date_range):
         return mean([tasmin, tasmax])
 
     else:
-        return get_period_data(data_options[data], date_range,
+        return get_period_data(data_options[inter_annual_var], date_range,
                     request_data(
                         variable_options[variable],
                         time_of_year_options[time_of_year]['time'],

@@ -41,6 +41,8 @@ def main():
     for var in variables:
         collected_variables[var] = get_variables(var, args.date_range)
 
+    print(collected_variables)
+
     # partially define dict accessor to abstract it for the evaluator
     variable_getter = partial(get_val_from_dict, collected_variables)
 

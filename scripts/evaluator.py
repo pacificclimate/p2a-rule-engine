@@ -45,7 +45,6 @@ def evaluate_rule(rule, rules, variable_getter):
 
     def evaluate_expression(expression):
         """Evaluate the given expression."""
-        print(expression)
         # base case
         if isinstance(expression, float) or isinstance(expression, int):
             return Decimal(expression)
