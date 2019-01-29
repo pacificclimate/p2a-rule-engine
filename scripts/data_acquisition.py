@@ -7,10 +7,10 @@ from statistics import mean
 variable_options = {
     'temp': {'min': 'tasmin', 'max': 'tasmax'},
     'prec': 'pr',
-    'dg05': 'gdd',
-    'nffd': 'fdETCCDI',
-    'pass': 'pr', # this variable is missing from the ensemble?
-    'dl18': 'hdd'
+    'dg05': 'pr',   # gdd, missing seasonal data
+    'nffd': 'pr',   # this variable is missing from the ensemble?
+    'pass': 'pr',   # this variable is missing from the ensemble?
+    'dl18': 'pr'    # hdd, missing seasonal data
 }
 
 time_of_year_options = {
@@ -96,7 +96,7 @@ def request_data(variable, time, timescale):
         'model': 'CanESM2',             # fixed model?
         'emission': 'historical,rcp85', # fixed emission scenario?
         'time': time,
-        'area': None,                   # polygon passed in by p2a?
+        'area': None,                   # polygon passed in by front end?
         'variable': variable,
         'timescale': timescale}
 
@@ -110,26 +110,32 @@ def get_ce_data(var_name, date_range):
     variable, time_of_year, inter_annual_var, \
         spatial, ensemble_percentile = var_name.split('_')
 
-    if variable == 'temp':
-        # special case for temp because we have to use tasmin and tasmax together
-        tasmin = get_period_data(data_options[inter_annual_var], date_range,
-                    request_data(
-                        variable_options[variable]['min'],
-                        time_of_year_options[time_of_year]['time'],
-                        time_of_year_options[time_of_year]['timescale']))
-        tasmax = get_period_data(data_options[inter_annual_var], date_range,
-                    request_data(
-                        variable_options[variable]['max'],
-                        time_of_year_options[time_of_year]['time'],
-                        time_of_year_options[time_of_year]['timescale']))
-        return mean([tasmin, tasmax])
+    if inter_annual_var == 'iastddev':
+        # handle this using timeseries
+        print('Standard Deviation not implemented yet. var_name: {}'.format(var_name))
+    elif inter_annual_var == 'iamean':
+        # factor this out?
+        print('Mean implemented. var_name: {}'.format(var_name))
+        if variable == 'temp':
+            # special case for temp because we have to use tasmin and tasmax together
+            tasmin = get_period_data(spatial_options[spatial], date_range,
+                        request_data(
+                            variable_options[variable]['min'],
+                            time_of_year_options[time_of_year]['time'],
+                            time_of_year_options[time_of_year]['timescale']))
+            tasmax = get_period_data(spatial_options[spatial], date_range,
+                        request_data(
+                            variable_options[variable]['max'],
+                            time_of_year_options[time_of_year]['time'],
+                            time_of_year_options[time_of_year]['timescale']))
+            return mean([tasmin, tasmax])
 
-    else:
-        return get_period_data(data_options[inter_annual_var], date_range,
-                    request_data(
-                        variable_options[variable],
-                        time_of_year_options[time_of_year]['time'],
-                        time_of_year_options[time_of_year]['timescale']))
+        else:
+            return get_period_data(spatial_options[spatial], date_range,
+                        request_data(
+                            variable_options[variable],
+                            time_of_year_options[time_of_year]['time'],
+                            time_of_year_options[time_of_year]['timescale']))
 
 
 def get_variables(var_name, date_range):
