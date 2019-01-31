@@ -154,6 +154,7 @@ def get_models(percentile):
             'ensemble_name': 'ce_files'
         }
         meta_data = requests.get(url, params=query_string).json()
+        # return a set of all the model ids in the meta data
         return set([meta_data[unique_id]['model_id'] for unique_id in meta_data.keys()])
 
 
@@ -161,9 +162,13 @@ def get_ce_data(var_name, date_range):
     """Parse a given variable name and into parameters that are used to query
        the Climate Explorer backend.
     """
-    variable, time_of_year, inter_annual_var, \
-        spatial, percentile = var_name.split('_')
-
+    try:
+        variable, time_of_year, inter_annual_var, \
+            spatial, percentile = var_name.split('_')
+    except ValueError as e:
+        print('Error: Unable to read variable name\n{}'.format(e))
+        return None
+    
     models = get_models(percentile)
 
     if inter_annual_var == 'iastddev':
