@@ -2,6 +2,7 @@ import csv
 import json
 import requests
 from statistics import mean
+import numpy as np
 
 
 variable_options = {
@@ -45,9 +46,15 @@ data_options = {
 }
 
 date_options = {
-    '2020s': ['20100101-20391231', '20110101-20400101'],
+    '2020s': ['20100101-20391231', '20110101-20400101', '20100101-20391230'],
     '2050s': ['20400101-20691231'],
     '2080s': ['20700101-20991231']
+}
+
+percentile_options = {
+    'e25p': 25,
+    'e75p': 75,
+    'hist': 100
 }
 
 
@@ -71,7 +78,7 @@ def read_csv(filename):
     return rules
 
 
-def get_period_data(target, date_range, periods):
+def filter_period_data(target, date_range, periods):
     """Given a json object containing data for different 30 year periods,
        find the desired period and return the target variable.
     """
@@ -85,7 +92,7 @@ def get_period_data(target, date_range, periods):
     return None
 
 
-def request_data(variable, time, timescale):
+def request_data(model, variable, time, timescale):
     """Request data from the Climate Explorer backend using multistats and
        return a json object containing data from all the 30 year periods (2020s,
        2050s, 2080s)
@@ -93,7 +100,7 @@ def request_data(variable, time, timescale):
     url = 'https://services.pacificclimate.org/marmot/api/multistats'
     query_string = {
         'ensemble_name': 'ce_files',
-        'model': 'CanESM2',             # fixed model?
+        'model': model,
         'emission': 'historical,rcp85', # fixed emission scenario?
         'time': time,
         'area': None,                   # polygon passed in by front end?
@@ -103,46 +110,80 @@ def request_data(variable, time, timescale):
     return requests.get(url, params=query_string).json()
 
 
+def _mean(tasmin, tasmax):
+    if tasmin is not None and tasmax is not None:
+        return mean([tasmin, tasmax])
+    else:
+        return None
+
+
+def handle_iamean(model, variable, time_of_year, spatial, date_range, percentile):
+    """Return the desired variable for a particular climate model"""
+    if variable == 'temp':
+        tasmin = filter_period_data(spatial_options[spatial], date_range,
+                    request_data(
+                        model,
+                        variable_options[variable]['min'],
+                        time_of_year_options[time_of_year]['time'],
+                        time_of_year_options[time_of_year]['timescale']))
+        tasmax = filter_period_data(spatial_options[spatial], date_range,
+                    request_data(
+                        model,
+                        variable_options[variable]['max'],
+                        time_of_year_options[time_of_year]['time'],
+                        time_of_year_options[time_of_year]['timescale']))
+
+        return _mean(tasmin, tasmax)
+
+    else:
+        return filter_period_data(spatial_options[spatial], date_range,
+                request_data(
+                        model,
+                        variable_options[variable],
+                        time_of_year_options[time_of_year]['time'],
+                        time_of_year_options[time_of_year]['timescale']))
+
+
+def get_models(percentile):
+    """Return a list of models needed to compute the percentile"""
+    if percentile == 'hist':
+        return ['cru_ts_21']  # baseline
+    else:
+        url = 'https://services.pacificclimate.org/marmot/api/multimeta'
+        query_string = {
+            'ensemble_name': 'ce_files'
+        }
+        meta_data = requests.get(url, params=query_string).json()
+        return set([meta_data[unique_id]['model_id'] for unique_id in meta_data.keys()])
+
+
 def get_ce_data(var_name, date_range):
     """Parse a given variable name and into parameters that are used to query
        the Climate Explorer backend.
     """
     variable, time_of_year, inter_annual_var, \
-        spatial, ensemble_percentile = var_name.split('_')
+        spatial, percentile = var_name.split('_')
+
+    models = get_models(percentile)
 
     if inter_annual_var == 'iastddev':
-        # handle this using timeseries
+        # handle this using timeseries???
         print('Standard Deviation not implemented yet. var_name: {}'.format(var_name))
-    elif inter_annual_var == 'iamean':
-        # factor this out?
-        print('Mean implemented. var_name: {}'.format(var_name))
-        if variable == 'temp':
-            # special case for temp because we have to use tasmin and tasmax together
-            tasmin = get_period_data(spatial_options[spatial], date_range,
-                        request_data(
-                            variable_options[variable]['min'],
-                            time_of_year_options[time_of_year]['time'],
-                            time_of_year_options[time_of_year]['timescale']))
-            tasmax = get_period_data(spatial_options[spatial], date_range,
-                        request_data(
-                            variable_options[variable]['max'],
-                            time_of_year_options[time_of_year]['time'],
-                            time_of_year_options[time_of_year]['timescale']))
-            return mean([tasmin, tasmax])
 
-        else:
-            return get_period_data(spatial_options[spatial], date_range,
-                        request_data(
-                            variable_options[variable],
-                            time_of_year_options[time_of_year]['time'],
-                            time_of_year_options[time_of_year]['timescale']))
+    elif inter_annual_var == 'iamean':
+        result = []
+        for model in models:
+            datum = handle_iamean(model, variable, time_of_year, spatial, date_range, percentile)
+            if datum is not None:
+                result.append(datum)
+
+        return np.asscalar(np.percentile(result, percentile_options[percentile]))
 
 
 def get_variables(var_name, date_range):
-    """Given a variable name return the value by lookup table or by querying
-       the CE backend.
-    """
-    if var_name == 'region_oncoast':    # temp fix
+    """Given a variable name return the value by querying the CE backend"""
+    if var_name == 'region_oncoast':
+        # TODO: Add /regions endpoint to CE backend for this particular vartiable
         return 1
     else:
         return get_ce_data(var_name, date_range)

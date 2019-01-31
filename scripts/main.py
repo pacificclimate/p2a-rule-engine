@@ -8,9 +8,9 @@ from data_acquisition import get_val_from_dict, read_csv, get_variables
 
 def print_dict(d):
     """Print out dictionary values in a more human readable format"""
-    print('{\n')
+    print('{')
     for key, value in d.items():
-        print('\t{0}: {1}\n'.format(key, value))
+        print('    {0}: {1}'.format(key, value))
     print('}')
 
 
