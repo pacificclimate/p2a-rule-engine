@@ -166,9 +166,9 @@ def get_ce_data(var_name, date_range):
         variable, time_of_year, inter_annual_var, \
             spatial, percentile = var_name.split('_')
     except ValueError as e:
-        print('Error: Unable to read variable name\n{}'.format(e))
+        print('Error: Unable to read variable name {}\n{}'.format(var_name, e))
         return None
-    
+
     models = get_models(percentile)
 
     if inter_annual_var == 'iastddev':
