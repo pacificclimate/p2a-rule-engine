@@ -39,18 +39,13 @@ def main():
             variables.add(var)
 
     # get values for all variables we will need for evaluation
-    collected_variables = {}
-    for var in variables:
-        collected_variables[var] = get_variables(var, args.date_range)
-
+    collected_variables = {var: get_variables(var, args.date_range) for var in variables}
 
     # partially define dict accessor to abstract it for the evaluator
     variable_getter = partial(get_val_from_dict, collected_variables)
 
     # evaluate parse trees
-    result = {}
-    for id, rule in parse_trees.items():
-        result[id] = evaluate_rule(rule, parse_trees, variable_getter)
+    result = {id: evaluate_rule(rule, parse_trees, variable_getter) for id, rule in parse_trees.items()}
 
     # print for now
     print_dict(result)
