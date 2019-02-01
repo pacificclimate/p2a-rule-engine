@@ -11,9 +11,7 @@ operands = {
     '>=': operator.ge,
     '<': operator.lt,
     '<=': operator.le,
-    '==': operator.eq,
-    '&&': operator.and_,
-    '||': operator.or_
+    '==': operator.eq
 }
 
 
@@ -57,6 +55,12 @@ def evaluate_rule(rule, rules, variable_getter):
         if operand in operands:
             return operands[operand](evaluate_expression(expression[1]),
                                      evaluate_expression(expression[2]))
+        elif operand == '&&':
+            return evaluate_expression(expression[1]) and \
+                   evaluate_expression(expression[2])
+        elif operand == '||':
+            return evaluate_expression(expression[1]) or \
+                   evaluate_expression(expression[2])
         elif operand == '!':
             return not evaluate_expression(expression[1])
         elif operand == '?':
