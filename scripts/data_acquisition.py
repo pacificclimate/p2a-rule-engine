@@ -9,7 +9,7 @@ variable_options = {
     'temp': {'min': 'tasmin', 'max': 'tasmax'},
     'prec': 'pr',
     'dg05': 'pr',   # gdd, missing seasonal data
-    'nffd': 'pr',   # this variable is missing from the ensemble?
+    'nffd': 'pr',   # not in 30 year timeseries
     'pass': 'pr',   # this variable is missing from the ensemble?
     'dl18': 'pr'    # hdd, missing seasonal data
 }
@@ -87,12 +87,11 @@ def filter_period_data(target, date_range, periods):
         for date in dates:
             if date in key:
                 return periods[key][target]
-
-    print('Range {} could not be found in {}'.format(range, periods))
+                
     return None
 
 
-def request_data(model, variable, time, timescale):
+def request_data(model, area, variable, time, timescale):
     """Request data from the Climate Explorer backend using multistats and
        return a json object containing data from all the 30 year periods (2020s,
        2050s, 2080s)
@@ -103,7 +102,7 @@ def request_data(model, variable, time, timescale):
         'model': model,
         'emission': 'historical,rcp85', # fixed emission scenario?
         'time': time,
-        'area': None,                   # polygon passed in by front end?
+        'area': area,
         'variable': variable,
         'timescale': timescale}
 
@@ -117,18 +116,20 @@ def _mean(tasmin, tasmax):
         return None
 
 
-def handle_iamean(model, variable, time_of_year, spatial, date_range, percentile):
+def handle_iamean(model, variable, time_of_year, spatial, date_range, area, percentile):
     """Return the desired variable for a particular climate model"""
     if variable == 'temp':
         tasmin = filter_period_data(spatial_options[spatial], date_range,
                     request_data(
                         model,
+                        area,
                         variable_options[variable]['min'],
                         time_of_year_options[time_of_year]['time'],
                         time_of_year_options[time_of_year]['timescale']))
         tasmax = filter_period_data(spatial_options[spatial], date_range,
                     request_data(
                         model,
+                        area,
                         variable_options[variable]['max'],
                         time_of_year_options[time_of_year]['time'],
                         time_of_year_options[time_of_year]['timescale']))
@@ -139,6 +140,7 @@ def handle_iamean(model, variable, time_of_year, spatial, date_range, percentile
         return filter_period_data(spatial_options[spatial], date_range,
                 request_data(
                         model,
+                        area,
                         variable_options[variable],
                         time_of_year_options[time_of_year]['time'],
                         time_of_year_options[time_of_year]['timescale']))
@@ -158,7 +160,7 @@ def get_models(percentile):
         return set([meta_data[unique_id]['model_id'] for unique_id in meta_data.keys()])
 
 
-def get_ce_data(var_name, date_range):
+def get_ce_data(var_name, date_range, area):
     """Parse a given variable name and into parameters that are used to query
        the Climate Explorer backend.
     """
@@ -178,17 +180,17 @@ def get_ce_data(var_name, date_range):
     elif inter_annual_var == 'iamean':
         result = []
         for model in models:
-            datum = handle_iamean(model, variable, time_of_year, spatial, date_range, percentile)
+            datum = handle_iamean(model, variable, time_of_year, spatial, date_range, area, percentile)
             if datum is not None:
                 result.append(datum)
 
         return np.asscalar(np.percentile(result, percentile_options[percentile]))
 
 
-def get_variables(var_name, date_range):
+def get_variables(var_name, date_range, area):
     """Given a variable name return the value by querying the CE backend"""
     if var_name == 'region_oncoast':
         # TODO: Add /regions endpoint to CE backend for this particular vartiable
         return 1
     else:
-        return get_ce_data(var_name, date_range)
+        return get_ce_data(var_name, date_range, area)
