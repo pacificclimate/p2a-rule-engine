@@ -82,13 +82,20 @@ def filter_period_data(target, date_range, periods):
     """Given a json object containing data for different 30 year periods,
        find the desired period and return the target variable.
     """
-    dates = date_options[date_range]
+    try:
+        dates = date_options[date_range]
+    except KeyError as e:
+        print('Bad date range: {}\n{}'.format(date_range, e))
+        return None
+
     for key in periods.keys():
         for date in dates:
             if date in key:
-                return periods[key][target]
-                
-    return None
+                try:
+                    return periods[key][target]
+                except KeyError as e:
+                    print('Bad target variable: {}\n{}'.format(target, e))
+                    return None
 
 
 def request_data(model, area, variable, time, timescale):
@@ -109,13 +116,6 @@ def request_data(model, area, variable, time, timescale):
     return requests.get(url, params=query_string).json()
 
 
-def _mean(tasmin, tasmax):
-    if tasmin is not None and tasmax is not None:
-        return mean([tasmin, tasmax])
-    else:
-        return None
-
-
 def handle_iamean(model, variable, time_of_year, spatial, date_range, area, percentile):
     """Return the desired variable for a particular climate model"""
     if variable == 'temp':
@@ -134,7 +134,12 @@ def handle_iamean(model, variable, time_of_year, spatial, date_range, area, perc
                         time_of_year_options[time_of_year]['time'],
                         time_of_year_options[time_of_year]['timescale']))
 
-        return _mean(tasmin, tasmax)
+        try:
+            return mean([tasmin, tasmax])
+        except KeyError as e:
+            print('Unable to get mean of tasmin: {} and tasmax: {}\n{}'
+                  .format(tasmin, tasmax, e))
+            return None
 
     else:
         return filter_period_data(spatial_options[spatial], date_range,
@@ -149,7 +154,7 @@ def handle_iamean(model, variable, time_of_year, spatial, date_range, area, perc
 def get_models(percentile):
     """Return a list of models needed to compute the percentile"""
     if percentile == 'hist':
-        return ['cru_ts_21']  # baseline
+        return ['cru_ts_21']  # baseline, this doesn't work yet
     else:
         url = 'https://services.pacificclimate.org/marmot/api/multimeta'
         query_string = {
@@ -157,7 +162,8 @@ def get_models(percentile):
         }
         meta_data = requests.get(url, params=query_string).json()
         # return a set of all the model ids in the meta data
-        return set([meta_data[unique_id]['model_id'] for unique_id in meta_data.keys()])
+        return set([meta_data[unique_id]['model_id']
+                    for unique_id in meta_data.keys()])
 
 
 def get_ce_data(var_name, date_range, area):
@@ -174,15 +180,19 @@ def get_ce_data(var_name, date_range, area):
     models = get_models(percentile)
 
     if inter_annual_var == 'iastddev':
-        # handle this using timeseries???
         print('Standard Deviation not implemented yet. var_name: {}'.format(var_name))
 
     elif inter_annual_var == 'iamean':
-        result = []
-        for model in models:
-            datum = handle_iamean(model, variable, time_of_year, spatial, date_range, area, percentile)
-            if datum is not None:
-                result.append(datum)
+        result = [
+            data for data in [
+                handle_iamean(
+                    model,
+                    variable,
+                    time_of_year,
+                    spatial,
+                    date_range,
+                    area,
+                    percentile) for model in models] if data is not None]
 
         return np.asscalar(np.percentile(result, percentile_options[percentile]))
 
