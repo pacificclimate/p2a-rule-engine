@@ -17,21 +17,28 @@ Example output:
 ### Setup
 To run the program create and enter a python3 virtual environment.
 ```
-virtualenv -p python3 venv
-source venv/bin/activate
+$virtualenv -p python3 venv
+$source venv/bin/activate
 ```
 
 Next ensure that you install all the requirements.
 ```
-pip install -r requirements.txt
+(venv)$ pip install -r requirements.txt
+```
+
+Set up CE Backend.
+```
+(venv)$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
+(venv)$ export C_INCLUDE_PATH=/usr/include/gdal
+(venv)$ pip install -i https://pypi.pacificclimate.org/simple ce
+(venv)$ pip install -i https://pypi.pacificclimate.org/simple nchelpers==5.2.0
+(venv)$ pip install -i https://pypi.pacificclimate.org/simple modelmeta==0.2.0
 ```
 
 ### Run
-To run the program pass in a .csv that contains at least the columns _id_ and _condition_.
 ```
-python scripts/main.py --csv tests/planners-impacts-sm.csv --filename tests/test_data.json
+(venv)$ python scripts/main.py --csv planners-impacts.csv --date '2020s' --region
 ```
-Please note that the data being used is made up, and not all of the variables in _planners-impacts.csv_ exist in the data file.  Thus you should use _planners-impacts-sm.csv_ or _planners-impacts-test.csv_.
 
 
 ### Program Flow
