@@ -9,7 +9,8 @@ from scripts.resolver import build_parse_tree
      {'test_var_1'}),
     ('''!rule_2b && 5 > 6''',
      ('&&', ('!', 'rule_2b'), ('>', Decimal(5), Decimal(6))), set()),
-    ('''rule_3c ? 1:0''', ('?', 'rule_3c', Decimal(1), Decimal(0)), set())
+    ('''rule_3c ? 1:0''', ('?', 'rule_3c', Decimal(1), Decimal(0)), set()),
+    ('''(! (1 > 2))''', ('!', ('>', Decimal(1), Decimal(2))), set())
 ])
 def test_build_parse_tree(rule, expected_tree, expected_vars):
     assert expected_tree, expected_vars == build_parse_tree(rule)

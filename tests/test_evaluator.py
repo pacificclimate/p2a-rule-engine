@@ -46,3 +46,10 @@ def test_cond_operator(cond, t_val, f_val, expected):
 ])
 def test_evaluate_rule(rule, rules, variable_getter, expected):
     assert expected == evaluate_rule(rule, rules, variable_getter)
+
+
+@pytest.mark.parametrize(('rule', 'rules', 'variable_getter', 'expected'), [
+    (('BAD_EXPR', Decimal(5), Decimal(6)), None, None, None),
+])
+def test_evaluate_rule_bad_expression(rule, rules, variable_getter, expected):
+    assert expected == evaluate_rule(rule, rules, variable_getter)
