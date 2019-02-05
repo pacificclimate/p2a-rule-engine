@@ -8,14 +8,6 @@ from evaluator import evaluate_rule
 from data_acquisition import get_val_from_dict, read_csv, get_variables
 
 
-def print_dict(d):
-    """Print out dictionary values in a more human readable format"""
-    print('{')
-    for key, value in d.items():
-        print('    {0}: {1}'.format(key, value))
-    print('}')
-
-
 def main():
     parser = ArgumentParser()
     parser.add_argument('-c', '--csv', help='CSV file containing rules',
@@ -58,18 +50,18 @@ def main():
         region = None
 
     # get values for all variables we will need for evaluation
-    Session = sessionmaker(create_engine('postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta'))
+    connection_string = 'postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta'
+    Session = sessionmaker(create_engine(connection_string))
     sesh = Session()
-    collected_variables = {var: get_variables(sesh, var, args.date_range, region) for var in variables}
+    collected_variables = {var: get_variables(sesh, var, args.date_range, region)
+                           for var in variables}
 
     # partially define dict accessor to abstract it for the evaluator
     variable_getter = partial(get_val_from_dict, collected_variables)
 
     # evaluate parse trees
-    result = {id: evaluate_rule(rule, parse_trees, variable_getter) for id, rule in parse_trees.items()}
-
-    # print for now
-    print_dict(result)
+    return {id: evaluate_rule(rule, parse_trees, variable_getter)
+            for id, rule in parse_trees.items()}
 
 
 if __name__ == '__main__':
