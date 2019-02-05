@@ -1,8 +1,13 @@
 import csv
 import json
-import requests
 from statistics import mean
 import numpy as np
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from ce.api.models import models
+from ce.api.multistats import multistats
+from ce.api.multimeta import multimeta
 
 
 variable_options = {
@@ -98,41 +103,27 @@ def filter_period_data(target, date_range, periods):
                     return None
 
 
-def request_data(model, area, variable, time, timescale):
-    """Request data from the Climate Explorer backend using multistats and
-       return a json object containing data from all the 30 year periods (2020s,
-       2050s, 2080s)
-    """
-    url = 'https://services.pacificclimate.org/marmot/api/multistats'
-    query_string = {
-        'ensemble_name': 'ce_files',
-        'model': model,
-        'emission': 'historical,rcp85', # fixed emission scenario?
-        'time': time,
-        'area': area,
-        'variable': variable,
-        'timescale': timescale}
-
-    return requests.get(url, params=query_string).json()
-
-
-def handle_iamean(model, variable, time_of_year, spatial, date_range, area, percentile):
+def handle_iamean(sesh, model, variable, time_of_year, spatial, date_range, area, percentile):
     """Return the desired variable for a particular climate model"""
     if variable == 'temp':
         tasmin = filter_period_data(spatial_options[spatial], date_range,
-                    request_data(
-                        model,
-                        area,
-                        variable_options[variable]['min'],
-                        time_of_year_options[time_of_year]['time'],
-                        time_of_year_options[time_of_year]['timescale']))
+                    multistats(sesh,
+                        ensemble_name='ce_files',
+                        model=model,
+                        emission='historical,rcp85',
+                        time=time_of_year_options[time_of_year]['time'],
+                        area=area,
+                        variable=variable_options[variable]['min'],
+                        timescale=time_of_year_options[time_of_year]['timescale']))
         tasmax = filter_period_data(spatial_options[spatial], date_range,
-                    request_data(
-                        model,
-                        area,
-                        variable_options[variable]['max'],
-                        time_of_year_options[time_of_year]['time'],
-                        time_of_year_options[time_of_year]['timescale']))
+                    multistats(sesh,
+                        ensemble_name='ce_files',
+                        model=model,
+                        emission='historical,rcp85',
+                        time=time_of_year_options[time_of_year]['time'],
+                        area=area,
+                        variable=variable_options[variable]['max'],
+                        timescale=time_of_year_options[time_of_year]['timescale']))
 
         try:
             return mean([tasmin, tasmax])
@@ -143,30 +134,27 @@ def handle_iamean(model, variable, time_of_year, spatial, date_range, area, perc
 
     else:
         return filter_period_data(spatial_options[spatial], date_range,
-                request_data(
-                        model,
-                        area,
-                        variable_options[variable],
-                        time_of_year_options[time_of_year]['time'],
-                        time_of_year_options[time_of_year]['timescale']))
+            multistats(sesh,
+                ensemble_name='ce_files',
+                model=model,
+                emission='historical,rcp85',
+                time=time_of_year_options[time_of_year]['time'],
+                area=area,
+                variable=variable_options[variable],
+                timescale=time_of_year_options[time_of_year]['timescale']))
 
 
-def get_models(percentile):
+def get_models(sesh, percentile):
     """Return a list of models needed to compute the percentile"""
     if percentile == 'hist':
-        return ['cru_ts_21']  # baseline, this doesn't work yet
+        # TODO: return the name of the baseline model
+        # this is placeholder code until baseline is determined
+        return ['cru_ts_21']
     else:
-        url = 'https://services.pacificclimate.org/marmot/api/multimeta'
-        query_string = {
-            'ensemble_name': 'ce_files'
-        }
-        meta_data = requests.get(url, params=query_string).json()
-        # return a set of all the model ids in the meta data
-        return set([meta_data[unique_id]['model_id']
-                    for unique_id in meta_data.keys()])
+        return models(sesh, ensemble_name='ce_files')
 
 
-def get_ce_data(var_name, date_range, area):
+def get_ce_data(sesh, var_name, date_range, area):
     """Parse a given variable name and into parameters that are used to query
        the Climate Explorer backend.
     """
@@ -177,7 +165,7 @@ def get_ce_data(var_name, date_range, area):
         print('Error: Unable to read variable name {}\n{}'.format(var_name, e))
         return None
 
-    models = get_models(percentile)
+    models = get_models(sesh, percentile)
 
     if inter_annual_var == 'iastddev':
         print('Standard Deviation not implemented yet. var_name: {}'.format(var_name))
@@ -186,6 +174,7 @@ def get_ce_data(var_name, date_range, area):
         result = [
             data for data in [
                 handle_iamean(
+                    sesh,
                     model,
                     variable,
                     time_of_year,
@@ -197,10 +186,10 @@ def get_ce_data(var_name, date_range, area):
         return np.asscalar(np.percentile(result, percentile_options[percentile]))
 
 
-def get_variables(var_name, date_range, area):
+def get_variables(sesh, var_name, date_range, area):
     """Given a variable name return the value by querying the CE backend"""
     if var_name == 'region_oncoast':
         # TODO: Add /regions endpoint to CE backend for this particular vartiable
         return 1
     else:
-        return get_ce_data(var_name, date_range, area)
+        return get_ce_data(sesh, var_name, date_range, area)
