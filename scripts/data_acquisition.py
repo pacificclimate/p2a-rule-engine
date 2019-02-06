@@ -14,29 +14,29 @@ variable_options = {
     'temp': {'min': 'tasmin', 'max': 'tasmax'},
     'prec': 'pr',
     'dg05': 'pr',   # gdd, missing seasonal data
-    'nffd': 'pr',   # not in 30 year timeseries
+    'nffd': 'fdETCCDI',   # not in 30 year timeseries
     'pass': 'pr',   # this variable is missing from the ensemble?
     'dl18': 'pr'    # hdd, missing seasonal data
 }
 
 time_of_year_options = {
-    'ann': {'time': 0, 'timescale': 'yearly'},
-    'djf': {'time': 0, 'timescale': 'seasonal'},
-    'mam': {'time': 1, 'timescale': 'seasonal'},
-    'jja': {'time': 2, 'timescale': 'seasonal'},
-    'son': {'time': 3, 'timescale': 'seasonal'},
-    'jan': {'time': 0, 'timescale': 'monthly'},
-    'feb': {'time': 1, 'timescale': 'monthly'},
-    'mar': {'time': 2, 'timescale': 'monthly'},
-    'apr': {'time': 3, 'timescale': 'monthly'},
-    'may': {'time': 4, 'timescale': 'monthly'},
-    'jun': {'time': 5, 'timescale': 'monthly'},
-    'jul': {'time': 6, 'timescale': 'monthly'},
-    'aug': {'time': 7, 'timescale': 'monthly'},
-    'sep': {'time': 8, 'timescale': 'monthly'},
-    'oct': {'time': 9, 'timescale': 'monthly'},
-    'nov': {'time': 10, 'timescale': 'monthly'},
-    'dec': {'time': 11, 'timescale': 'monthly'},
+    'ann': {'time': '0', 'timescale': 'yearly'},
+    'djf': {'time': '0', 'timescale': 'seasonal'},
+    'mam': {'time': '1', 'timescale': 'seasonal'},
+    'jja': {'time': '2', 'timescale': 'seasonal'},
+    'son': {'time': '3', 'timescale': 'seasonal'},
+    'jan': {'time': '0', 'timescale': 'monthly'},
+    'feb': {'time': '1', 'timescale': 'monthly'},
+    'mar': {'time': '2', 'timescale': 'monthly'},
+    'apr': {'time': '3', 'timescale': 'monthly'},
+    'may': {'time': '4', 'timescale': 'monthly'},
+    'jun': {'time': '5', 'timescale': 'monthly'},
+    'jul': {'time': '6', 'timescale': 'monthly'},
+    'aug': {'time': '7', 'timescale': 'monthly'},
+    'sep': {'time': '8', 'timescale': 'monthly'},
+    'oct': {'time': '9', 'timescale': 'monthly'},
+    'nov': {'time': '10', 'timescale': 'monthly'},
+    'dec': {'time': '11', 'timescale': 'monthly'},
 }
 
 spatial_options = {
@@ -84,7 +84,7 @@ def read_csv(filename):
 
 
 def filter_period_data(target, date_range, periods):
-    """Given a json object containing data for different 30 year periods,
+    """Search through dictionary containing data for different 30 year periods,
        find the desired period and return the target variable.
     """
     try:
