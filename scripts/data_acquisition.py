@@ -48,6 +48,22 @@ def filter_period_data(target, dates, periods):
                     return None
 
 
+def get_nffd(fd, time, timescale):
+    # TODO: Do we have to consider leap years for this calculation???
+    if timescale == 'yearly':
+        return 365 - fd
+    elif timescale == 'seasonal':
+        if time == 0:
+            return 89 - fd
+        elif time == 1 or time == 2:
+            return 92 - fd
+        elif time == 3:
+            return 91 - fd
+    else:
+        print('Could not find matching time')
+        return None
+
+
 def query_backend(sesh, model, args):
     """Return the desired variable for a particular climate model"""
     if args['variable'] == 'temp':
@@ -76,7 +92,21 @@ def query_backend(sesh, model, args):
             print('Unable to get mean of tasmin: {} and tasmax: {}\n{}'
                   .format(tasmin, tasmax, e))
             return None
-
+    elif args['variable'] == 'fdETCCDI':
+        fd = filter_period_data(args['spatial'], args['dates'],
+                multistats(sesh,
+                    ensemble_name='ce_files',
+                    model=model,
+                    emission=args['emission'],
+                    time=args['time'],
+                    area=args['area'],
+                    variable=args['variable'],
+                    timescale=args['timescale']))
+        try:
+            return get_nffd(fd, args['time'], args['timescale'])
+        except TypeError as e:
+            print('Unable to compute nffd from fd with {}\n{}'.format(fd, e))
+            return None
     else:
         return filter_period_data(args['spatial'], args['dates'],
             multistats(sesh,
@@ -136,7 +166,7 @@ def temp_prep_area(area):
 def prep_args(variable, time_of_year, spatial, percentile, area, date_range):
     """Given a set of arguments return a dictionary containing their CE
        counterparts
-    """ 
+    """
     variable_options = {
         'temp': {'min': 'tasmin', 'max': 'tasmax'},
         'prec': 'pr',
@@ -193,6 +223,7 @@ def prep_args(variable, time_of_year, spatial, percentile, area, date_range):
     ce_time, ce_timescale = prep_time_of_year(time_of_year_options, time_of_year)
 
     ce_area = temp_prep_area(area)
+    print('area {}'.format(ce_area))
 
     date_options = {
         '2020s': ['20100101-20391231', '20110101-20400101', '20100101-20391230'],
