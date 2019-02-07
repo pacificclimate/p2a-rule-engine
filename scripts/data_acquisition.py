@@ -100,6 +100,9 @@ def get_models(sesh, percentile):
 
 
 def prep_time_of_year(time_of_year_options, time_of_year):
+    """Given a dictionary of options and a time of year return the parameters
+       needed to query the CE backend.
+    """
     try:
         time, timescale = time_of_year_options[time_of_year]
     except KeyError as e:
@@ -110,6 +113,11 @@ def prep_time_of_year(time_of_year_options, time_of_year):
 
 
 def temp_prep_area(area):
+    """Return the wkt for metro vancouver or None
+
+       This is temporary until the backends functionality is updated to include
+       regions.
+    """
     if area:
         # use metro vancouver for now
         return """POLYGON((-122.70904541015625 49.31438004800689,-122.92327880859375
@@ -126,6 +134,9 @@ def temp_prep_area(area):
 
 
 def prep_args(variable, time_of_year, spatial, percentile, area, date_range):
+    """Given a set of arguments return a dictionary containing their CE
+       counterparts
+    """ 
     variable_options = {
         'temp': {'min': 'tasmin', 'max': 'tasmax'},
         'prec': 'pr',
