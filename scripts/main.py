@@ -21,7 +21,7 @@ def main():
     # read csv
     rules = read_csv(args.csv)
 
-    # create parse tree dictionary
+    # create parse tree dictionary and gather unique variables
     parse_trees = {}
     variables = set()
     for rule, condition in rules.items():
@@ -35,34 +35,20 @@ def main():
         for var in vars:
             variables.add(var)
 
-    if args.region:
-        # use metro vancouver for now
-        region = """POLYGON((-122.70904541015625 49.31438004800689,-122.92327880859375
-            49.35733376286064,-123.14849853515625
-            49.410973199695846,-123.34625244140625
-            49.30721745093609,-123.36273193359375
-            49.18170338770662,-123.20343017578125
-            49.005447494058096,-122.44537353515625
-            49.023461463214126,-122.46734619140625
-            49.13500260581219,-122.50579833984375
-            49.31079887964633,-122.70904541015625 49.31438004800689))"""
-    else:
-        region = None
-
     # get values for all variables we will need for evaluation
     connection_string = 'postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta'
     Session = sessionmaker(create_engine(connection_string))
     sesh = Session()
-    collected_variables = {var: get_variables(sesh, var, args.date_range, region)
+    collected_variables = {var: get_variables(sesh, var, args.date_range, args.region)
                            for var in variables}
 
     # partially define dict accessor to abstract it for the evaluator
     variable_getter = partial(get_val_from_dict, collected_variables)
 
     # evaluate parse trees
-    return {id: evaluate_rule(rule, parse_trees, variable_getter)
-            for id, rule in parse_trees.items()}
-
+    result = {id: evaluate_rule(rule, parse_trees, variable_getter)
+              for id, rule in parse_trees.items()}
+    print(result)
 
 if __name__ == '__main__':
     main()
