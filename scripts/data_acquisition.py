@@ -66,7 +66,7 @@ def get_nffd(fd, time, timescale):
 
 def query_backend(sesh, model, args):
     """Return the desired variable for a particular climate model"""
-    if args['variable'] == 'temp':
+    if type(args['variable']) is dict:
         tasmin = filter_period_data(args['spatial'], args['dates'],
                     multistats(sesh,
                         ensemble_name='ce_files',
@@ -88,7 +88,7 @@ def query_backend(sesh, model, args):
 
         try:
             return mean([tasmin, tasmax])
-        except KeyError as e:
+        except TypeError as e:
             print('Unable to get mean of tasmin: {} and tasmax: {}\n{}'
                   .format(tasmin, tasmax, e))
             return None
@@ -170,10 +170,10 @@ def prep_args(variable, time_of_year, spatial, percentile, area, date_range):
     variable_options = {
         'temp': {'min': 'tasmin', 'max': 'tasmax'},
         'prec': 'pr',
-        'dg05': 'gdd',      # missing seasonal data
-        'nffd': 'fdETCCDI', # not in 30 year timeseries
-        'pass': None,       # this variable is missing from the ensemble?
-        'dl18': 'hdd'       # missing seasonal data
+        'dg05': 'gdd',
+        'nffd': 'fdETCCDI',
+        'pass': None,   # this variable is missing from the ensemble?
+        'dl18': 'hdd'
     }
     ce_variable = get_val_from_dict(variable_options, variable)
 
@@ -255,6 +255,7 @@ def get_ce_data(sesh, var_name, date_range, area):
 
     args = prep_args(variable, time_of_year, spatial, percentile,
                      area, date_range)
+    print(args)
     models = get_models(sesh, percentile)
 
     if inter_annual_var == 'iastddev':
