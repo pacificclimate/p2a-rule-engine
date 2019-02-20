@@ -48,6 +48,7 @@ def filter_period_data(target, dates, periods):
                     return None
 
 
+
 def get_nffd(fd, time, timescale):
     # TODO: Do we have to consider leap years for this calculation???
     if timescale == 'yearly':
@@ -69,7 +70,7 @@ def query_backend(sesh, model, args):
     if type(args['variable']) is dict:
         tasmin = filter_period_data(args['spatial'], args['dates'],
                     multistats(sesh,
-                        ensemble_name='ce_files',
+                        ensemble_name='p2a_files',
                         model=model,
                         emission=args['emission'],
                         time=args['time'],
@@ -78,7 +79,7 @@ def query_backend(sesh, model, args):
                         timescale=args['timescale']))
         tasmax = filter_period_data(args['spatial'], args['dates'],
                     multistats(sesh,
-                        ensemble_name='ce_files',
+                        ensemble_name='p2a_files',
                         model=model,
                         emission=args['emission'],
                         time=args['time'],
@@ -89,13 +90,13 @@ def query_backend(sesh, model, args):
         try:
             return mean([tasmin, tasmax])
         except TypeError as e:
-            print('Unable to get mean of tasmin: {} and tasmax: {}\n{}'
-                  .format(tasmin, tasmax, e))
+            print('Unable to get mean of tasmin: {} and tasmax: {} in model: {}\n{}'
+                  .format(tasmin, tasmax, model, e))
             return None
     elif args['variable'] == 'fdETCCDI':
         fd = filter_period_data(args['spatial'], args['dates'],
                 multistats(sesh,
-                    ensemble_name='ce_files',
+                    ensemble_name='p2a_files',
                     model=model,
                     emission=args['emission'],
                     time=args['time'],
@@ -107,10 +108,21 @@ def query_backend(sesh, model, args):
         except TypeError as e:
             print('Unable to compute nffd from fd with {}\n{}'.format(fd, e))
             return None
+    elif args['percentile'] == 'hist':
+        print('YOU ARE HERE')
+        return filter_period_data(args['spatial'], ['19710101-20001231'],
+            multistats(sesh,
+                ensemble_name='p2a_files',
+                model=model,
+                emission=args['emission'],
+                time=args['time'],
+                area=args['area'],
+                variable=args['variable'],
+                timescale=args['timescale']))
     else:
         return filter_period_data(args['spatial'], args['dates'],
             multistats(sesh,
-                ensemble_name='ce_files',
+                ensemble_name='p2a_files',
                 model=model,
                 emission=args['emission'],
                 time=args['time'],
@@ -121,12 +133,14 @@ def query_backend(sesh, model, args):
 
 def get_models(sesh, percentile):
     """Return a list of models needed to compute the percentile"""
+    historical_baseline = 'anusplin'
     if percentile == 'hist':
-        # TODO: return the name of the baseline model
-        # this is placeholder code until baseline is determined
-        return ['cru_ts_21']
+        return [historical_baseline]
     else:
-        return models(sesh, ensemble_name='ce_files')
+        # return all models EXCEPT for the historical baseline
+        all_models = models(sesh, ensemble_name='p2a_files')
+        all_models.remove(historical_baseline)
+        return all_models
 
 
 def prep_time_of_year(time_of_year_options, time_of_year):
@@ -197,9 +211,13 @@ def prep_args(variable, time_of_year, spatial, percentile, area, date_range):
         'dg05': 'historical, rcp85',
         'nffd': 'historical, rcp85',
         'pass': 'historical, rcp85',
-        'dl18': 'historical, rcp85'
+        'dl18': 'historical, rcp85',
+        'hist': ''  # historical has no emission scenario
     }
-    ce_emission = get_val_from_dict(emission_options, variable)
+    if percentile == 'hist':
+        ce_emission = get_val_from_dict(emission_options, percentile)
+    else:
+        ce_emission = get_val_from_dict(emission_options, variable)
 
     time_of_year_options = {
         'ann': ['0', 'yearly'],
@@ -223,14 +241,17 @@ def prep_args(variable, time_of_year, spatial, percentile, area, date_range):
     ce_time, ce_timescale = prep_time_of_year(time_of_year_options, time_of_year)
 
     ce_area = temp_prep_area(area)
-    print('area {}'.format(ce_area))
 
     date_options = {
+        'hist': ['19710101-20001231'],
         '2020s': ['20100101-20391231', '20110101-20400101', '20100101-20391230'],
         '2050s': ['20400101-20691231'],
         '2080s': ['20700101-20991231']
     }
-    dates = get_val_from_dict(date_options, date_range)
+    if percentile == 'hist':
+        dates = get_val_from_dict(date_options, percentile)
+    else:
+        dates = get_val_from_dict(date_options, date_range)
 
     return {'variable': ce_variable,
             'spatial': ce_spatial,
@@ -255,7 +276,6 @@ def get_ce_data(sesh, var_name, date_range, area):
 
     args = prep_args(variable, time_of_year, spatial, percentile,
                      area, date_range)
-    print(args)
     models = get_models(sesh, percentile)
 
     if inter_annual_var == 'iastddev':
