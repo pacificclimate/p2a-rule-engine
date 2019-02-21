@@ -1,5 +1,15 @@
 import operator
 from decimal import Decimal
+import logging
+
+
+# Logging setup
+formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', "%Y-%m-%d %H:%M:%S")
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
 
 
 operands = {
@@ -72,7 +82,7 @@ def evaluate_rule(rule, rules, variable_getter):
                                                         rules,
                                                         variable_getter))
         else:
-            print('Unable to process expression')
+            logger.warning('Unable to process expression')
             return None
 
     return evaluate_expression(rule)
