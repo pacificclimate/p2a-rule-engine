@@ -208,10 +208,10 @@ def prep_args(variable, time_of_year, spatial, percentile, area, date_range):
     emission_options = {
         'temp': 'historical,rcp85',
         'prec': 'historical,rcp85',
-        'dg05': 'historical, rcp85',
+        'dg05': 'historical,rcp85',
         'nffd': 'historical, rcp85',
         'pass': 'historical, rcp85',
-        'dl18': 'historical, rcp85',
+        'dl18': 'historical,rcp85',
         'hist': ''  # historical has no emission scenario
     }
     if percentile == 'hist':
