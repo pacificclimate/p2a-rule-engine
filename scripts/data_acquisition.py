@@ -4,10 +4,20 @@ from statistics import mean
 import numpy as np
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import logging
 
 from ce.api.models import models
 from ce.api.multistats import multistats
 from ce.api.multimeta import multimeta
+
+
+# Logging setup
+formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', "%Y-%m-%d %H:%M:%S")
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
 
 
 def get_val_from_dict(dict, val):
@@ -15,7 +25,7 @@ def get_val_from_dict(dict, val):
     try:
         return dict[val]
     except KeyError as e:
-        print('Unable to get val: {} from dict: {}\n{}'.format(val, dict, e))
+        logger.warning('Unable to get val: {} from dict: {}\n{}'.format(val, dict, e))
         return None
 
 
@@ -44,9 +54,8 @@ def filter_period_data(target, dates, periods):
                 try:
                     return periods[key][target]
                 except KeyError as e:
-                    print('Bad target variable: {}\n{}'.format(target, e))
+                    logger.warning('Bad target variable: {}\n{}'.format(target, e))
                     return None
-
 
 
 def get_nffd(fd, time, timescale):
@@ -61,7 +70,7 @@ def get_nffd(fd, time, timescale):
         elif time == 3:
             return 91 - fd
     else:
-        print('Could not find matching time')
+        logger.warning('Could not find matching time for time: {} and timescale: {}'.format(time, timescale))
         return None
 
 
@@ -90,7 +99,7 @@ def query_backend(sesh, model, args):
         try:
             return mean([tasmin, tasmax])
         except TypeError as e:
-            print('Unable to get mean of tasmin: {} and tasmax: {} in model: {}\n{}'
+            logger.warning('Unable to get mean of tasmin: {} and tasmax: {} in model: {}\n{}'
                   .format(tasmin, tasmax, model, e))
             return None
     elif args['variable'] == 'fdETCCDI':
@@ -106,10 +115,9 @@ def query_backend(sesh, model, args):
         try:
             return get_nffd(fd, args['time'], args['timescale'])
         except TypeError as e:
-            print('Unable to compute nffd from fd with {}\n{}'.format(fd, e))
+            logger.warning('Unable to compute nffd from fd with {}\n{}'.format(fd, e))
             return None
     elif args['percentile'] == 'hist':
-        print('YOU ARE HERE')
         return filter_period_data(args['spatial'], ['19710101-20001231'],
             multistats(sesh,
                 ensemble_name='p2a_files',
@@ -150,7 +158,7 @@ def prep_time_of_year(time_of_year_options, time_of_year):
     try:
         time, timescale = time_of_year_options[time_of_year]
     except KeyError as e:
-        print('Bad time of year: {}\n{}'.format(time_of_year, e))
+        logger.warning('Bad time of year: {}\n{}'.format(time_of_year, e))
         return None
 
     return time, timescale
@@ -271,7 +279,7 @@ def get_ce_data(sesh, var_name, date_range, area):
         variable, time_of_year, inter_annual_var, \
             spatial, percentile = var_name.split('_')
     except ValueError as e:
-        print('Error: Unable to read variable name {}\n{}'.format(var_name, e))
+        logger.error('Error: Unable to read variable name {}\n{}'.format(var_name, e))
         return None
 
     args = prep_args(variable, time_of_year, spatial, percentile,
@@ -279,7 +287,7 @@ def get_ce_data(sesh, var_name, date_range, area):
     models = get_models(sesh, percentile)
 
     if inter_annual_var == 'iastddev':
-        print('Standard Deviation not implemented yet. var_name: {}'.format(var_name))
+        logger.warning('Standard Deviation not implemented yet. var_name: {}'.format(var_name))
 
     elif inter_annual_var == 'iamean':
         result = [
