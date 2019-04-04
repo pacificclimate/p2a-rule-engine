@@ -1,7 +1,6 @@
 import pytest
 
-from scripts.data_acquisition import read_csv, filter_period_data, \
-    prep_time_of_year, prep_args
+from scripts.data_acquisition import read_csv, filter_period_data, prep_args
 
 
 @pytest.mark.parametrize(('expected_rules', 'expected_conds'), [
@@ -50,28 +49,10 @@ def test_filter_period_data_bad_vars(target, dates, ce_response):
     assert filter_period_data(target, dates, ce_response) is None
 
 
-@pytest.mark.parametrize(('time_of_year_options', 'time_of_year', 'time', 'timescale'), [
-    ({'mam': ['1', 'seasonal']}, 'mam', '1', 'seasonal'),
-    ({'ann': ['0', 'yearly']}, 'ann', '0', 'yearly'),
-    ({'mar': ['2', 'monthly']}, 'mar', '2', 'monthly')
-])
-def test_prep_time_of_year(time_of_year_options, time_of_year, time, timescale):
-    test_time, test_timescale = prep_time_of_year(time_of_year_options, time_of_year)
-    assert test_time == time
-    assert test_timescale == timescale
-
-
-@pytest.mark.parametrize(('time_of_year_options', 'time_of_year'), [
-    ({'mam': ['1', 'seasonal']}, 'bad_time'),
-])
-def test_prep_time_of_year_bad_vars(time_of_year_options, time_of_year):
-        bad_ret = prep_time_of_year(time_of_year_options, time_of_year)
-        assert bad_ret is None
-
-
-@pytest.mark.parametrize(('variable', 'time_of_year', 'spatial', 'percentile', 'area', 'date_range', 'expected'), [
-    ('temp', 'djf', 'smean', 'e25p', True, '2020s',
+@pytest.mark.parametrize(('variable', 'time_of_year', 'cell_method', 'spatial', 'percentile', 'area', 'date_range', 'expected'), [
+    ('temp', 'djf', 'iamean', 'smean', 'e25p', True, '2020s',
      {'variable': {'min': 'tasmin', 'max': 'tasmax'},
+      'cell_method': 'mean',
       'spatial': 'mean',
       'percentile': 25,
       'emission': 'historical,rcp85',
@@ -89,7 +70,7 @@ def test_prep_time_of_year_bad_vars(time_of_year_options, time_of_year):
             49.31079887964633,-122.70904541015625 49.31438004800689))""",
       'dates': ['20100101-20391231', '20110101-20400101', '20100101-20391230']})
 ])
-def test_prep_args(variable, time_of_year, spatial, percentile, area, date_range, expected):
-    test_args = prep_args(variable, time_of_year, spatial, percentile, area, date_range)
+def test_prep_args(variable, time_of_year, cell_method, spatial, percentile, area, date_range, expected):
+    test_args = prep_args(variable, time_of_year, cell_method, spatial, percentile, area, date_range)
     for key in test_args.keys():
         assert test_args[key] == expected[key]
