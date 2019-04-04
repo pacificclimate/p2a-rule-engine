@@ -36,10 +36,8 @@ def read_csv(filename):
     rules = {}
     with open(filename, 'r') as f:
         csv_reader = list(csv.DictReader(f, delimiter=';'))
-        for row in csv_reader:
-            rule = 'rule_{}'.format(list(row.values())[0])
-            cond = list(row.values())[1]
-            rules[rule] = cond
+        rules = {'rule_{}'.format(list(row.values())[0]): list(row.values())[1]
+                 for row in csv_reader}
 
     return rules
 
