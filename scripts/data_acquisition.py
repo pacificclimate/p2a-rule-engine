@@ -59,7 +59,7 @@ def filter_period_data(target, dates, periods):
 
 
 def get_nffd(fd, time, timescale):
-    # TODO: Do we have to consider leap years for this calculation???
+    # TODO: Consider 360 day calendars here?
     if timescale == 'yearly':
         return 365 - fd
     elif timescale == 'seasonal':
@@ -76,6 +76,7 @@ def get_nffd(fd, time, timescale):
 
 def query_backend(sesh, model, args):
     """Return the desired variable for a particular climate model"""
+    # TODO: Add cell_method filter here
     if type(args['variable']) is dict:
         tasmin = filter_period_data(args['spatial'], args['dates'],
                     multistats(sesh,
@@ -185,49 +186,23 @@ def temp_prep_area(area):
         return None
 
 
-def prep_args(variable, time_of_year, spatial, percentile, area, date_range):
+def prep_args(variable, time_of_year, inter_annual_var, spatial, percentile, area, date_range):
     """Given a set of arguments return a dictionary containing their CE
        counterparts
     """
-    variable_options = {
+    args = {}
+
+    ce_variable = {
         'temp': {'min': 'tasmin', 'max': 'tasmax'},
         'prec': 'pr',
         'dg05': 'gdd',
         'nffd': 'fdETCCDI',
         'pass': None,   # this variable is missing from the ensemble?
         'dl18': 'hdd'
-    }
-    ce_variable = get_val_from_dict(variable_options, variable)
+    }[variable]
+    args['variable'] = ce_variable
 
-    spatial_options = {
-        's0p': 'min',
-        's100p': 'max',
-        'smean': 'mean'
-    }
-    ce_spatial = get_val_from_dict(spatial_options, spatial)
-
-    percentile_options = {
-        'e25p': 25,
-        'e75p': 75,
-        'hist': 100
-    }
-    ce_percentile = get_val_from_dict(percentile_options, percentile)
-
-    emission_options = {
-        'temp': 'historical,rcp85',
-        'prec': 'historical,rcp85',
-        'dg05': 'historical,rcp85',
-        'nffd': 'historical, rcp85',
-        'pass': 'historical, rcp85',
-        'dl18': 'historical,rcp85',
-        'hist': ''  # historical has no emission scenario
-    }
-    if percentile == 'hist':
-        ce_emission = get_val_from_dict(emission_options, percentile)
-    else:
-        ce_emission = get_val_from_dict(emission_options, variable)
-
-    time_of_year_options = {
+    ce_time, ce_timescale = {
         'ann': ['0', 'yearly'],
         'djf': ['0', 'seasonal'],
         'mam': ['1', 'seasonal'],
@@ -245,30 +220,60 @@ def prep_args(variable, time_of_year, spatial, percentile, area, date_range):
         'oct': ['9', 'monthly'],
         'nov': ['10', 'monthly'],
         'dec': ['11', 'monthly'],
-    }
-    ce_time, ce_timescale = prep_time_of_year(time_of_year_options, time_of_year)
+    }[time_of_year]
+    args['time'] = ce_time
+    args['timescale'] = ce_timescale
 
-    ce_area = temp_prep_area(area)
+    ce_cell_method = {
+        'iastddev': 'standard_deviation',
+        'iamean': 'mean'
+    }[inter_annual_var]
+    args['cell_method'] = ce_cell_method
 
-    date_options = {
+    ce_spatial = {
+        's0p': 'min',
+        's100p': 'max',
+        'smean': 'mean'
+    }[spatial]
+    args['spatial'] = ce_spatial
+
+    ce_percentile = {
+        'e25p': 25,
+        'e75p': 75,
+        'hist': 100
+    }[percentile]
+    args['percentile'] = ce_percentile
+
+    if percentile == 'hist':
+        emission = percentile
+    else:
+        emission = variable
+    ce_emission = {
+        'temp': 'historical,rcp85',
+        'prec': 'historical,rcp85',
+        'dg05': 'historical,rcp85',
+        'nffd': 'historical, rcp85',
+        'pass': 'historical, rcp85',
+        'dl18': 'historical,rcp85',
+        'hist': ''  # historical has no emission scenario
+    }[emission]
+    args['emission'] = ce_emission
+
+    args['area'] = temp_prep_area(area)
+
+    if percentile == 'hist':
+        dates = percentile
+    else:
+        dates = date_range
+    ce_dates = {
         'hist': ['19710101-20001231'],
         '2020s': ['20100101-20391231', '20110101-20400101', '20100101-20391230'],
-        '2050s': ['20400101-20691231'],
-        '2080s': ['20700101-20991231']
-    }
-    if percentile == 'hist':
-        dates = get_val_from_dict(date_options, percentile)
-    else:
-        dates = get_val_from_dict(date_options, date_range)
+        '2050s': ['20400101-20691231', '20410101-20700101', '20400101-20691230'],
+        '2080s': ['20700101-20991231', '20710101-21000101', '20700101-20991230']
+    }[dates]
+    args['dates'] = ce_dates
 
-    return {'variable': ce_variable,
-            'spatial': ce_spatial,
-            'percentile': ce_percentile,
-            'emission': ce_emission,
-            'time': ce_time,
-            'timescale': ce_timescale,
-            'area': ce_area,
-            'dates': dates}
+    return args
 
 
 def get_ce_data(sesh, var_name, date_range, area):
@@ -282,20 +287,16 @@ def get_ce_data(sesh, var_name, date_range, area):
         logger.error('Error: Unable to read variable name {}\n{}'.format(var_name, e))
         return None
 
-    args = prep_args(variable, time_of_year, spatial, percentile,
-                     area, date_range)
+    args = prep_args(variable, time_of_year, inter_annual_var, spatial,
+                     percentile, area, date_range)
     models = get_models(sesh, percentile)
 
-    if inter_annual_var == 'iastddev':
-        logger.warning('Standard Deviation not implemented yet. var_name: {}'.format(var_name))
+    result = [
+        data for data in [
+            query_backend(sesh, model, args) for model in models]
+            if data is not None]
 
-    elif inter_annual_var == 'iamean':
-        result = [
-            data for data in [
-                query_backend(sesh, model, args) for model in models]
-                if data is not None]
-
-        return np.asscalar(np.percentile(result, args['percentile']))
+    return np.asscalar(np.percentile(result, args['percentile']))
 
 
 def get_variables(sesh, var_name, date_range, area):
