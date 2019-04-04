@@ -150,19 +150,6 @@ def get_models(sesh, percentile):
         return all_models
 
 
-def prep_time_of_year(time_of_year_options, time_of_year):
-    """Given a dictionary of options and a time of year return the parameters
-       needed to query the CE backend.
-    """
-    try:
-        time, timescale = time_of_year_options[time_of_year]
-    except KeyError as e:
-        logger.warning('Bad time of year: {}\n{}'.format(time_of_year, e))
-        return None
-
-    return time, timescale
-
-
 def temp_prep_area(area):
     """Return the wkt for metro vancouver or None
 
