@@ -1,5 +1,6 @@
 atomicwrites==1.2.1
 attrs==18.2.0
+ce==1.1.0
 certifi==2018.11.29
 chardet==3.0.4
 coverage==4.5.2
@@ -7,7 +8,9 @@ flake8==3.6.0
 GDAL==2.2.0
 idna==2.8
 mccabe==0.6.1
+modelmeta==0.2.0
 more-itertools==5.0.0
+nchelpers==5.2.0
 numpy==1.16.0
 pluggy==0.8.1
 py==1.7.0
