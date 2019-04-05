@@ -17,22 +17,15 @@ Example output:
 ### Setup
 To run the program create and enter a python3 virtual environment.
 ```
-$virtualenv -p python3 venv
+$python3 -m venv venv
 $source venv/bin/activate
 ```
 
 Next ensure that you install all the requirements.
 ```
-(venv)$ pip install -r requirements.txt
-```
-
-Set up CE Backend.
-```
 (venv)$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
 (venv)$ export C_INCLUDE_PATH=/usr/include/gdal
-(venv)$ pip install -i https://pypi.pacificclimate.org/simple ce
-(venv)$ pip install -i https://pypi.pacificclimate.org/simple nchelpers==5.2.0
-(venv)$ pip install -i https://pypi.pacificclimate.org/simple modelmeta==0.2.0
+(venv)$ pip install -i https://pypi.pacificclimate.org/simple -r requirements.txt
 ```
 
 ### Run
