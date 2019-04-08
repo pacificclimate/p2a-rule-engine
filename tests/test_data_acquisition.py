@@ -1,6 +1,7 @@
 import pytest
 
-from scripts.data_acquisition import read_csv, filter_period_data, prep_args
+from scripts.data_acquisition import read_csv, filter_period_data, prep_args, \
+    get_nffd
 
 
 @pytest.mark.parametrize(('expected_rules', 'expected_conds'), [
@@ -74,3 +75,14 @@ def test_prep_args(variable, time_of_year, cell_method, spatial, percentile, are
     test_args = prep_args(variable, time_of_year, cell_method, spatial, percentile, area, date_range)
     for key in test_args.keys():
         assert test_args[key] == expected[key]
+
+
+@pytest.mark.parametrize(('fd', 'time', 'timescale', 'expected'), [
+    (50, '0', 'seasonal', 39),
+    (60, '1', 'seasonal', 32),
+    (70, '2', 'seasonal', 22),
+    (80, '3', 'seasonal', 11),
+    (150, '0', 'yearly', 215)
+])
+def test_get_nffd(fd, time, timescale, expected):
+    assert get_nffd(fd, time, timescale) == expected
