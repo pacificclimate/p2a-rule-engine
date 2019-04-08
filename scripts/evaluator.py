@@ -3,15 +3,7 @@ from decimal import Decimal
 import logging
 
 
-# Logging setup
-formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', "%Y-%m-%d %H:%M:%S")
-handler = logging.StreamHandler()
-handler.setFormatter(formatter)
-
-logger = logging.getLogger(__name__)
-logger.addHandler(handler)
-
-
+logger = logging.getLogger('scripts')
 operands = {
     '+': operator.add,
     '-': operator.sub,
