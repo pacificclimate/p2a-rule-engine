@@ -58,14 +58,17 @@ def filter_period_data(target, dates, periods):
 
 def get_nffd(fd, time, timescale):
     # TODO: Consider 360 day calendars here?
+    if fd is None:
+        return None
+
     if timescale == 'yearly':
         return 365 - fd
     elif timescale == 'seasonal':
-        if time == 0:
+        if time == '0':
             return 89 - fd
-        elif time == 1 or time == 2:
+        elif time == '1' or time == '2':
             return 92 - fd
-        elif time == 3:
+        elif time == '3':
             return 91 - fd
     else:
         logger.warning('Could not find matching time for time: {} and timescale: {}'.format(time, timescale))
@@ -84,7 +87,8 @@ def query_backend(sesh, model, args):
                         time=args['time'],
                         area=args['area'],
                         variable=args['variable']['min'],
-                        timescale=args['timescale']))
+                        timescale=args['timescale'],
+                        cell_method=args['cell_method']))
         tasmax = filter_period_data(args['spatial'], args['dates'],
                     multistats(sesh,
                         ensemble_name='p2a_files',
@@ -93,7 +97,8 @@ def query_backend(sesh, model, args):
                         time=args['time'],
                         area=args['area'],
                         variable=args['variable']['max'],
-                        timescale=args['timescale']))
+                        timescale=args['timescale'],
+                        cell_method=args['cell_method']))
 
         try:
             return mean([tasmin, tasmax])
@@ -110,7 +115,8 @@ def query_backend(sesh, model, args):
                     time=args['time'],
                     area=args['area'],
                     variable=args['variable'],
-                    timescale=args['timescale']))
+                    timescale=args['timescale'],
+                    cell_method=args['cell_method']))
         try:
             return get_nffd(fd, args['time'], args['timescale'])
         except TypeError as e:
@@ -125,7 +131,8 @@ def query_backend(sesh, model, args):
                 time=args['time'],
                 area=args['area'],
                 variable=args['variable'],
-                timescale=args['timescale']))
+                timescale=args['timescale'],
+                cell_method=args['cell_method']))
     else:
         return filter_period_data(args['spatial'], args['dates'],
             multistats(sesh,
@@ -135,7 +142,8 @@ def query_backend(sesh, model, args):
                 time=args['time'],
                 area=args['area'],
                 variable=args['variable'],
-                timescale=args['timescale']))
+                timescale=args['timescale'],
+                cell_method=args['cell_method']))
 
 
 def get_models(sesh, percentile):
@@ -182,7 +190,7 @@ def prep_args(variable, time_of_year, inter_annual_var, spatial, percentile, are
         'prec': 'pr',
         'dg05': 'gdd',
         'nffd': 'fdETCCDI',
-        'pass': None,   # this variable is missing from the ensemble?
+        'pass': 'prsn',
         'dl18': 'hdd'
     }[variable]
     args['variable'] = ce_variable
