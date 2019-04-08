@@ -11,13 +11,7 @@ from ce.api.multistats import multistats
 from ce.api.multimeta import multimeta
 
 
-# Logging setup
-formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', "%Y-%m-%d %H:%M:%S")
-handler = logging.StreamHandler()
-handler.setFormatter(formatter)
-
-logger = logging.getLogger(__name__)
-logger.addHandler(handler)
+logger = logging.getLogger('scripts')
 
 
 def get_val_from_dict(dict, val):
@@ -77,7 +71,6 @@ def get_nffd(fd, time, timescale):
 
 def query_backend(sesh, model, args):
     """Return the desired variable for a particular climate model"""
-    # TODO: Add cell_method filter here
     if type(args['variable']) is dict:
         tasmin = filter_period_data(args['spatial'], args['dates'],
                     multistats(sesh,
@@ -99,13 +92,13 @@ def query_backend(sesh, model, args):
                         variable=args['variable']['max'],
                         timescale=args['timescale'],
                         cell_method=args['cell_method']))
-
         try:
             return mean([tasmin, tasmax])
         except TypeError as e:
-            logger.warning('Unable to get mean of tasmin: {} and tasmax: {} in model: {}\n{}'
+            logger.warning('Unable to get mean of tasmin: {} and tasmax: {} in model: {} error: {}'
                   .format(tasmin, tasmax, model, e))
             return None
+
     elif args['variable'] == 'fdETCCDI':
         fd = filter_period_data(args['spatial'], args['dates'],
                 multistats(sesh,
@@ -122,6 +115,7 @@ def query_backend(sesh, model, args):
         except TypeError as e:
             logger.warning('Unable to compute nffd from fd with {}\n{}'.format(fd, e))
             return None
+
     elif args['percentile'] == 'hist':
         return filter_period_data(args['spatial'], ['19710101-20001231'],
             multistats(sesh,
@@ -133,6 +127,7 @@ def query_backend(sesh, model, args):
                 variable=args['variable'],
                 timescale=args['timescale'],
                 cell_method=args['cell_method']))
+
     else:
         return filter_period_data(args['spatial'], args['dates'],
             multistats(sesh,
