@@ -9,33 +9,20 @@ from evaluator import evaluate_rule
 from data_acquisition import get_val_from_dict, read_csv, get_variables
 
 
-# Logging setup
-formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', "%Y-%m-%d %H:%M:%S")
-handler = logging.StreamHandler()
-handler.setFormatter(formatter)
+def setup_logging(log_level):
+    formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', "%Y-%m-%d %H:%M:%S")
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    logger = logging.getLogger('scripts')
+    logger.addHandler(handler)
+    logger.setLevel(getattr(logging, log_level))
+    return logger
 
-logger = logging.getLogger(__name__)
-logger.addHandler(handler)
 
-
-def main():
-    parser = ArgumentParser()
-    parser.add_argument('-c', '--csv', help='CSV file containing rules',
-                        required=True)
-    parser.add_argument('-d', '--date-range', help='30 year period for data',
-                        required=True)
-    parser.add_argument('-r', '--region', help='Selected region',
-                        action='store_true')
-    parser.add_argument('-l', '--log-level', help='Logging level',
-                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR',
-                                 'CRITICAL'],
-                        default='INFO')
-    args = parser.parse_args()
-    logger.setLevel(getattr(logging, args.log_level))
-
+def main(csv, date_range, region, logger):
     # read csv
-    logger.info('Reading {}'.format(args.csv))
-    rules = read_csv(args.csv)
+    logger.info('Reading {}'.format(csv))
+    rules = read_csv(csv)
 
     # create parse tree dictionary and gather unique variables
     logger.info('Building parse tree')
@@ -57,7 +44,7 @@ def main():
     connection_string = 'postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta'
     Session = sessionmaker(create_engine(connection_string))
     sesh = Session()
-    collected_variables = {var: get_variables(sesh, var, args.date_range, args.region)
+    collected_variables = {var: get_variables(sesh, var, date_range, region)
                            for var in variables}
 
     # partially define dict accessor to abstract it for the evaluator
@@ -71,5 +58,20 @@ def main():
     logger.info('Rules resolved')
     print(result)
 
+
 if __name__ == '__main__':
-    main()
+    parser = ArgumentParser()
+    parser.add_argument('-c', '--csv', help='CSV file containing rules',
+                        required=True)
+    parser.add_argument('-d', '--date-range', help='30 year period for data',
+                        required=True)
+    parser.add_argument('-r', '--region', help='Selected region',
+                        action='store_true')
+    parser.add_argument('-l', '--log-level', help='Logging level',
+                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR',
+                                 'CRITICAL'],
+                        default='INFO')
+    args = parser.parse_args()
+    logger = setup_logging(args.log_level)
+
+    main(args.csv, args.date_range, args.region, logger)
