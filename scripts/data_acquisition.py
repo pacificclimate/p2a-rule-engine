@@ -247,7 +247,7 @@ def prep_args(variable, time_of_year, inter_annual_var, spatial, percentile, are
     }[emission]
     args['emission'] = ce_emission
 
-    args['area'] = temp_prep_area(area)
+    args['area'] = area['the_geom']
 
     if percentile == 'hist':
         dates = percentile
@@ -290,7 +290,6 @@ def get_ce_data(sesh, var_name, date_range, area):
 def get_variables(sesh, var_name, date_range, area):
     """Given a variable name return the value by querying the CE backend"""
     if var_name == 'region_oncoast':
-        # TODO: Add /regions endpoint to CE backend for this particular vartiable
-        return 1
+        return area['coast_bool'] == '1'
     else:
         return get_ce_data(sesh, var_name, date_range, area)
