@@ -51,6 +51,19 @@ Evaluate parse trees to determine truth value of each rule (evaluator.py)
 Print result dictionary {rule: True/False/Value} (main.py)
 ```
 
+### Troubleshooting
+#### No such file or directoy error
+In the case that an error in this form occurs:
+```
+NETCDF:"/path/to/some/data/file":some_variable: No such file or directory
+```
+Try the following:
+```
+(venv)$ pip uninstall rasterio
+(venv)$ pip install rasterio==1.0.22 --no-binary rasterio
+```
+This should fix the issue as it is likely that `rasterio` and `GDAL` were not working together properly.
+
 ### Testing
 Uses [pytest](https://github.com/pytest-dev/pytest).
 ```
