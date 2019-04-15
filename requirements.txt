@@ -21,6 +21,7 @@ pytest-cov==2.6.1
 pytest-flake8==1.0.3
 python-dateutil==2.7.5
 pytz==2018.9
+requests==2.21.0
 six==1.12.0
 sly==0.3
 urllib3==1.24.1
