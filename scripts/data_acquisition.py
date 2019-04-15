@@ -241,7 +241,7 @@ def prep_args(variable, time_of_year, inter_annual_var, spatial, percentile, are
         'prec': 'historical,rcp85',
         'dg05': 'historical,rcp85',
         'nffd': 'historical, rcp85',
-        'pass': 'historical, rcp85',
+        'pass': 'historical,rcp85',
         'dl18': 'historical,rcp85',
         'hist': ''  # historical has no emission scenario
     }[emission]
