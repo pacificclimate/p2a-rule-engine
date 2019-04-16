@@ -1,4 +1,3 @@
-from argparse import ArgumentParser
 from functools import partial
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -10,7 +9,8 @@ from fetch_data import get_dict_val, read_csv, get_variables
 
 
 def setup_logging(log_level):
-    formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', "%Y-%m-%d %H:%M:%S")
+    formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s',
+                                  "%Y-%m-%d %H:%M:%S")
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     logger = logging.getLogger('scripts')

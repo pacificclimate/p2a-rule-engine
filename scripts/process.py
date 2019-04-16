@@ -15,7 +15,8 @@ def get_region(region_name):
         'outputFormat': 'csv'
     }
     auth = ('admin', 'geoserver')
-    data = requests.get("http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows", params=params, auth=auth)
+    url = "http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows"
+    data = requests.get(url, params=params, auth=auth)
 
     decoded_data = data.content.decode('utf-8')
     csv_data = csv.DictReader(decoded_data.splitlines(), delimiter=',')

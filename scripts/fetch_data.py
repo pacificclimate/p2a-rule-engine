@@ -1,14 +1,10 @@
 import csv
-import json
 from statistics import mean
 import numpy as np
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import logging
 
 from ce.api.models import models
 from ce.api.multistats import multistats
-from ce.api.multimeta import multimeta
 
 
 logger = logging.getLogger('scripts')
@@ -19,7 +15,8 @@ def get_dict_val(dict, val):
     try:
         return dict[val]
     except KeyError as e:
-        logger.warning('Unable to get val: {} from dict: {}\n{}'.format(val, dict, e))
+        logger.warning('Unable to get val: {} from dict: {} error: {}'
+                       .format(val, dict, e))
         return None
 
 
@@ -36,7 +33,7 @@ def read_csv(filename):
     return rules
 
 
-def filter_period_data(target, dates, periods):
+def filter_by_period(target, dates, periods):
     """Search through dictionary containing data for different 30 year periods,
        find the desired period and return the target variable.
     """
@@ -46,7 +43,8 @@ def filter_period_data(target, dates, periods):
                 try:
                     return periods[key][target]
                 except KeyError as e:
-                    logger.warning('Bad target variable: {}\n{}'.format(target, e))
+                    logger.warning('Bad target variable: {} error: {}'
+                                   .format(target, e))
                     return None
 
 
@@ -65,80 +63,83 @@ def get_nffd(fd, time, timescale):
         elif time == '3':
             return 91 - fd
     else:
-        logger.warning('Could not find matching time for time: {} and timescale: {}'.format(time, timescale))
+        logger.warning(('Could not find matching time for time: {} and '
+                        'timescale: {}').format(time, timescale))
         return None
 
 
 def query_backend(sesh, model, args):
     """Return the desired variable for a particular climate model"""
     if type(args['variable']) is dict:
-        tasmin = filter_period_data(args['spatial'], args['dates'],
-                    multistats(sesh,
-                        ensemble_name='p2a_files',
-                        model=model,
-                        emission=args['emission'],
-                        time=args['time'],
-                        area=args['area'],
-                        variable=args['variable']['min'],
-                        timescale=args['timescale'],
-                        cell_method=args['cell_method']))
-        tasmax = filter_period_data(args['spatial'], args['dates'],
-                    multistats(sesh,
-                        ensemble_name='p2a_files',
-                        model=model,
-                        emission=args['emission'],
-                        time=args['time'],
-                        area=args['area'],
-                        variable=args['variable']['max'],
-                        timescale=args['timescale'],
-                        cell_method=args['cell_method']))
+        tasmin = filter_by_period(args['spatial'], args['dates'],
+                                  multistats(sesh,
+                                             ensemble_name='p2a_files',
+                                             model=model,
+                                             emission=args['emission'],
+                                             time=args['time'],
+                                             area=args['area'],
+                                             variable=args['variable']['min'],
+                                             timescale=args['timescale'],
+                                             cell_method=args['cell_method']))
+        tasmax = filter_by_period(args['spatial'], args['dates'],
+                                  multistats(sesh,
+                                             ensemble_name='p2a_files',
+                                             model=model,
+                                             emission=args['emission'],
+                                             time=args['time'],
+                                             area=args['area'],
+                                             variable=args['variable']['max'],
+                                             timescale=args['timescale'],
+                                             cell_method=args['cell_method']))
         try:
             return mean([tasmin, tasmax])
         except TypeError as e:
-            logger.debug('Unable to get mean of tasmin: {} and tasmax: {} in model: {} error: {}'
-                  .format(tasmin, tasmax, model, e))
+            logger.debug(('Unable to get mean of tasmin: {} and tasmax: {} in '
+                          'model: {} error: {}')
+                         .format(tasmin, tasmax, model, e))
             return None
 
     elif args['variable'] == 'fdETCCDI':
-        fd = filter_period_data(args['spatial'], args['dates'],
-                multistats(sesh,
-                    ensemble_name='p2a_files',
-                    model=model,
-                    emission=args['emission'],
-                    time=args['time'],
-                    area=args['area'],
-                    variable=args['variable'],
-                    timescale=args['timescale'],
-                    cell_method=args['cell_method']))
+        fd = filter_by_period(args['spatial'], args['dates'],
+                              multistats(sesh,
+                                         ensemble_name='p2a_files',
+                                         model=model,
+                                         emission=args['emission'],
+                                         time=args['time'],
+                                         area=args['area'],
+                                         variable=args['variable'],
+                                         timescale=args['timescale'],
+                                         cell_method=args['cell_method']))
         try:
             return get_nffd(fd, args['time'], args['timescale'])
         except TypeError as e:
-            logger.warning('Unable to compute nffd from fd with {}\n{}'.format(fd, e))
+            logger.warning('Unable to compute nffd from fd with {} error: {}'
+                           .format(fd, e))
             return None
 
     elif args['percentile'] == 'hist':
-        return filter_period_data(args['spatial'], ['19710101-20001231'],
-            multistats(sesh,
-                ensemble_name='p2a_files',
-                model=model,
-                emission=args['emission'],
-                time=args['time'],
-                area=args['area'],
-                variable=args['variable'],
-                timescale=args['timescale'],
-                cell_method=args['cell_method']))
+        return filter_by_period(args['spatial'], ['19710101-20001231'],
+                                multistats(sesh,
+                                           ensemble_name='p2a_files',
+                                           model=model,
+                                           emission=args['emission'],
+                                           time=args['time'],
+                                           area=args['area'],
+                                           variable=args['variable'],
+                                           timescale=args['timescale'],
+                                           cell_method=args['cell_method']))
 
     else:
-        return filter_period_data(args['spatial'], args['dates'],
-            multistats(sesh,
-                ensemble_name='p2a_files',
-                model=model,
-                emission=args['emission'],
-                time=args['time'],
-                area=args['area'],
-                variable=args['variable'],
-                timescale=args['timescale'],
-                cell_method=args['cell_method']))
+        return filter_by_period(args['spatial'], args['dates'],
+                                multistats(sesh,
+                                           ensemble_name='p2a_files',
+                                           model=model,
+                                           emission=args['emission'],
+                                           time=args['time'],
+                                           area=args['area'],
+                                           variable=args['variable'],
+                                           timescale=args['timescale'],
+                                           cell_method=args['cell_method']))
 
 
 def get_models(sesh, percentile):
@@ -153,7 +154,8 @@ def get_models(sesh, percentile):
         return all_models
 
 
-def prep_args(variable, time_of_year, inter_annual_var, spatial, percentile, area, date_range):
+def prep_args(variable, time_of_year, temporal, spatial, percentile, area,
+              date_range):
     """Given a set of arguments return a dictionary containing their CE
        counterparts
     """
@@ -194,7 +196,7 @@ def prep_args(variable, time_of_year, inter_annual_var, spatial, percentile, are
     ce_cell_method = {
         'iastddev': 'standard_deviation',
         'iamean': 'mean'
-    }[inter_annual_var]
+    }[temporal]
     args['cell_method'] = ce_cell_method
 
     ce_spatial = {
@@ -234,9 +236,15 @@ def prep_args(variable, time_of_year, inter_annual_var, spatial, percentile, are
         dates = date_range
     ce_dates = {
         'hist': ['19710101-20001231'],
-        '2020': ['20100101-20391231', '20110101-20400101', '20100101-20391230'],
-        '2050': ['20400101-20691231', '20410101-20700101', '20400101-20691230'],
-        '2080': ['20700101-20991231', '20710101-21000101', '20700101-20991230']
+        '2020': ['20100101-20391231',
+                 '20110101-20400101',
+                 '20100101-20391230'],
+        '2050': ['20400101-20691231',
+                 '20410101-20700101',
+                 '20400101-20691230'],
+        '2080': ['20700101-20991231',
+                 '20710101-21000101',
+                 '20700101-20991230']
     }[dates]
     args['dates'] = ce_dates
 
@@ -248,20 +256,21 @@ def get_ce_data(sesh, var_name, date_range, area):
        the Climate Explorer backend.
     """
     try:
-        variable, time_of_year, inter_annual_var, \
+        variable, time_of_year, temporal, \
             spatial, percentile = var_name.split('_')
     except ValueError as e:
-        logger.error('Error: Unable to read variable name {}\n{}'.format(var_name, e))
+        logger.error('Error: Unable to read variable name {} error: {}'
+                     .format(var_name, e))
         return None
 
-    args = prep_args(variable, time_of_year, inter_annual_var, spatial,
+    args = prep_args(variable, time_of_year, temporal, spatial,
                      percentile, area, date_range)
     models = get_models(sesh, percentile)
 
     result = [
-        data for data in [
-            query_backend(sesh, model, args) for model in models]
-            if data is not None]
+        data for data in [query_backend(sesh, model, args) for model in models]
+        if data is not None
+    ]
 
     return np.asscalar(np.percentile(result, args['percentile']))
 

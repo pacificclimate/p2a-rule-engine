@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.fetch_data import read_csv, filter_period_data, prep_args, \
+from scripts.fetch_data import read_csv, filter_by_period, prep_args, \
     get_nffd
 
 
@@ -36,8 +36,8 @@ def test_read_csv(expected_rules, expected_conds):
     ('min', ['20400101-20691231'], 1),
     ('max', ['20700101-20991231'], 10)
 ])
-def test_filter_period_data(target, dates, ce_response, expected):
-    assert expected == filter_period_data(target, dates, ce_response)
+def test_filter_by_period(target, dates, ce_response, expected):
+    assert expected == filter_by_period(target, dates, ce_response)
 
 
 @pytest.mark.parametrize(('target', 'dates'), [
@@ -46,21 +46,23 @@ def test_filter_period_data(target, dates, ce_response, expected):
                     '20100101-20391230']),
     ('min', ['bad_dates'])
 ])
-def test_filter_period_data_bad_vars(target, dates, ce_response):
-    assert filter_period_data(target, dates, ce_response) is None
+def test_filter_by_period_bad_vars(target, dates, ce_response):
+    assert filter_by_period(target, dates, ce_response) is None
 
 
-@pytest.mark.parametrize(('variable', 'time_of_year', 'cell_method', 'spatial', 'percentile', 'area', 'date_range', 'expected'), [
+@pytest.mark.parametrize(('variable', 'time_of_year', 'cell_method', 'spatial',
+                          'percentile', 'area', 'date_range', 'expected'), [
     ('temp', 'djf', 'iamean', 'smean', 'e25p',
-     {'the_geom':  """POLYGON((-122.70904541015625 49.31438004800689,-122.92327880859375
-            49.35733376286064,-123.14849853515625
+     {'the_geom':  """POLYGON((-122.70904541015625 49.31438004800689,
+            -122.92327880859375 49.35733376286064,-123.14849853515625
             49.410973199695846,-123.34625244140625
             49.30721745093609,-123.36273193359375
             49.18170338770662,-123.20343017578125
             49.005447494058096,-122.44537353515625
             49.023461463214126,-122.46734619140625
             49.13500260581219,-122.50579833984375
-            49.31079887964633,-122.70904541015625 49.31438004800689))"""}, '2020',
+            49.31079887964633,-122.70904541015625 49.31438004800689))"""},
+     '2020',
      {'variable': {'min': 'tasmin', 'max': 'tasmax'},
       'cell_method': 'mean',
       'spatial': 'mean',
@@ -69,8 +71,8 @@ def test_filter_period_data_bad_vars(target, dates, ce_response):
       'time': '0',
       'timescale':
       'seasonal',
-      'area': """POLYGON((-122.70904541015625 49.31438004800689,-122.92327880859375
-            49.35733376286064,-123.14849853515625
+      'area': """POLYGON((-122.70904541015625 49.31438004800689,
+            -122.92327880859375 49.35733376286064,-123.14849853515625
             49.410973199695846,-123.34625244140625
             49.30721745093609,-123.36273193359375
             49.18170338770662,-123.20343017578125
@@ -78,10 +80,13 @@ def test_filter_period_data_bad_vars(target, dates, ce_response):
             49.023461463214126,-122.46734619140625
             49.13500260581219,-122.50579833984375
             49.31079887964633,-122.70904541015625 49.31438004800689))""",
-      'dates': ['20100101-20391231', '20110101-20400101', '20100101-20391230']})
+      'dates': ['20100101-20391231', '20110101-20400101', '20100101-20391230']
+      })
 ])
-def test_prep_args(variable, time_of_year, cell_method, spatial, percentile, area, date_range, expected):
-    test_args = prep_args(variable, time_of_year, cell_method, spatial, percentile, area, date_range)
+def test_prep_args(variable, time_of_year, cell_method, spatial, percentile,
+        area, date_range, expected): # noqa
+    test_args = prep_args(variable, time_of_year, cell_method, spatial,
+                          percentile, area, date_range)
     for key in test_args.keys():
         assert test_args[key] == expected[key]
 
