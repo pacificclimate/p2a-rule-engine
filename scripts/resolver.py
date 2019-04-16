@@ -1,108 +1,61 @@
-from sly import Lexer, Parser
-from decimal import Decimal
+from argparse import ArgumentParser
+from functools import partial
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+import logging
+
+from parser import build_parse_tree
+from evaluator import evaluate_rule
+from fetch_data import get_dict_val, read_csv, get_variables
 
 
-class RuleLexer(Lexer):
-    """Given a string produce a series of Lex tokens"""
-    tokens = {
-        # tokens
-        'RULE',
-        'VARIABLE',
-        'NUMBER',
-
-        # special symbols
-        'AND',
-        'OR',
-        'EQUAL',
-        'GREATER_THAN_EQUAL',
-        'LESS_THAN_EQUAL',
-        'CONDITIONAL_OPERATOR'
-    }
-    ignore = ' \t'
-    literals = {'+', '-', '*', '/', '>', '<', '!', ':', '(', ')'}
-
-    # tokens
-    RULE = r'rule_([a-zA-z0-9]+)([^() ])*'
-    VARIABLE = r'([a-zA-z]+)([^() ])*'
-    NUMBER = r'-?\d+(\.\d+)?'
-
-    # special symbols
-    AND = r'&&'
-    OR = r'\|\|'
-    EQUAL = r'=='
-    GREATER_THAN_EQUAL = r'>='
-    LESS_THAN_EQUAL = r'<='
-    CONDITIONAL_OPERATOR = r'\?'
+def setup_logging(log_level):
+    formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s', "%Y-%m-%d %H:%M:%S")
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    logger = logging.getLogger('scripts')
+    logger.addHandler(handler)
+    logger.setLevel(getattr(logging, log_level))
+    return logger
 
 
-class RuleParser(Parser):
-    """Parse through a series of Lex tokens and produce a parse tree"""
-    tokens = RuleLexer.tokens
+def resolve_rules(csv, date_range, region, log_level='INFO'):
+    logger = setup_logging(log_level)
 
-    precedence = (
-        ('left', 'CONDITIONAL_OPERATOR', ':'),
-        ('left', 'AND', 'OR'),
-        ('right', '!'),
-        ('left', '>', '<', 'GREATER_THAN_EQUAL', 'LESS_THAN_EQUAL'),
-        ('left', '+', '-'),
-        ('left', '*', '/')
-    )
+    # read csv
+    logger.info('Reading {}'.format(csv))
+    rules = read_csv(csv)
 
-    def __init__(self):
-        self.vars = set()
+    # create parse tree dictionary and gather unique variables
+    logger.info('Building parse tree')
+    parse_trees = {}
+    variables = set()
+    for rule, condition in rules.items():
+        try:
+            parse_trees[rule], vars = build_parse_tree(condition)
+        except SyntaxError as e:
+            logger.warning('{}, rule will be excluded'.format(e))
+            continue
 
-    @_('expr')
-    def statement(self, p):
-        return p.expr
+        # add unique variables to set
+        for var in vars:
+            variables.add(var)
 
-    # literals
-    @_('expr "+" expr',
-       'expr "-" expr',
-       'expr "*" expr',
-       'expr "/" expr',
-       'expr ">" expr',
-       'expr "<" expr',
-       'expr AND expr',
-       'expr OR expr',
-       'expr EQUAL expr',
-       'expr LESS_THAN_EQUAL expr',
-       'expr GREATER_THAN_EQUAL expr')
-    def expr(self, p):
-        return (p[1], p.expr0, p.expr1)
+    # get values for all variables we will need for evaluation
+    logger.info('Collecting variables')
+    connection_string = 'postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta'
+    Session = sessionmaker(create_engine(connection_string))
+    sesh = Session()
+    collected_variables = {var: get_variables(sesh, var, date_range, region)
+                           for var in variables}
 
-    @_('"(" expr ")"')
-    def expr(self, p):
-        return p.expr
+    # partially define dict accessor to abstract it for the evaluator
+    variable_getter = partial(get_dict_val, collected_variables)
 
-    @_('"!" expr')
-    def expr(self, p):
-        return (p[0], p.expr)
+    # evaluate parse trees
+    logger.info('Evaluating parse trees')
+    result = {id: evaluate_rule(rule, parse_trees, variable_getter)
+              for id, rule in parse_trees.items()}
 
-    @_('expr CONDITIONAL_OPERATOR expr ":" expr')
-    def expr(self, p):
-        return (p[1], p.expr0, p.expr1, p.expr2)
-
-    @_('NUMBER')
-    def expr(self, p):
-        return Decimal(p.NUMBER)
-
-    @_('RULE')
-    def expr(self, p):
-        return p.RULE
-
-    @_('VARIABLE')
-    def expr(self, p):
-        self.vars.add(p.VARIABLE)
-        return p.VARIABLE
-
-    def error(self, p):
-        raise SyntaxError('Invalid Syntax {}'.format(p))
-
-
-def build_parse_tree(rule):
-    """Given a rule expression break down the components into a parse tree"""
-    lexer = RuleLexer()
-    parser = RuleParser()
-
-    # return parse tree AND all the variables used in the parse tree
-    return parser.parse(lexer.tokenize(rule)), parser.vars
+    logger.info('Rules resolved')
+    return result
