@@ -1,5 +1,5 @@
-# Rule Resolver
-Uses [SLY](https://github.com/dabeaz/sly) to process _planners-impacts.csv_.  The output of the module is a dictionary with the truth value of each of the rules in the _planners-impacts.csv_.
+# Rule Engine
+Uses [SLY](https://github.com/dabeaz/sly) to process csv file containing rules.  The output of the module is a dictionary with the truth value of each of the rules in the csv file.
 
 Example output:
 ```
