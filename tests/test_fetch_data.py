@@ -51,7 +51,16 @@ def test_filter_period_data_bad_vars(target, dates, ce_response):
 
 
 @pytest.mark.parametrize(('variable', 'time_of_year', 'cell_method', 'spatial', 'percentile', 'area', 'date_range', 'expected'), [
-    ('temp', 'djf', 'iamean', 'smean', 'e25p', True, '2020s',
+    ('temp', 'djf', 'iamean', 'smean', 'e25p',
+     {'the_geom':  """POLYGON((-122.70904541015625 49.31438004800689,-122.92327880859375
+            49.35733376286064,-123.14849853515625
+            49.410973199695846,-123.34625244140625
+            49.30721745093609,-123.36273193359375
+            49.18170338770662,-123.20343017578125
+            49.005447494058096,-122.44537353515625
+            49.023461463214126,-122.46734619140625
+            49.13500260581219,-122.50579833984375
+            49.31079887964633,-122.70904541015625 49.31438004800689))"""}, '2020',
      {'variable': {'min': 'tasmin', 'max': 'tasmax'},
       'cell_method': 'mean',
       'spatial': 'mean',
