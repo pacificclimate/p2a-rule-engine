@@ -21,7 +21,7 @@ $python3 -m venv venv
 $source venv/bin/activate
 ```
 
-Next ensure that you install all the requirements.
+Install requirements.
 ```
 (venv)$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
 (venv)$ export C_INCLUDE_PATH=/usr/include/gdal
@@ -29,18 +29,19 @@ Next ensure that you install all the requirements.
 ```
 
 ### Run
+To run the rule engine and view the results use `process.py`.
 ```
-(venv)$ python scripts/main.py --csv planners-impacts.csv --date '2020s' --region
+(venv)$ python scripts/process.py --csv rules.csv --date [date-option] --region [region-option]
 ```
 
 
 ### Program Flow
 ```
-Read planners-impacts.csv and extract id and condition columns (main.py)
-| | Input: .csv file
+Read csv and extract id and condition columns (resolver.py)
+| | Input: csv file
 | | Output: dictionary {rule: condition}
 |/
-Process conditions using SLY into parse trees (resolver.py)
+Process conditions using SLY into parse trees (parser.py)
 | | Input: string
 | | Output: parse tree tuple
 |/
@@ -48,14 +49,14 @@ Evaluate parse trees to determine truth value of each rule (evaluator.py)
 | | Input: parse tree tuple
 | | Output: truth value of parse tree (there are some cases where the output of the rule is actually a value)
 |/
-Print result dictionary {rule: True/False/Value} (main.py)
+Return result dictionary {rule: True/False/Value} (resolver.py)
 ```
 
 ### Troubleshooting
-#### No such file or directoy error
+#### No such file or directory error
 In the case that an error in this form occurs:
 ```
-NETCDF:"/path/to/some/data/file":some_variable: No such file or directory
+NETCDF:"file.nc":some_variable: No such file or directory
 ```
 Try the following:
 ```
