@@ -120,18 +120,6 @@ def query_backend(sesh, model, args):
                            .format(fd, e))
             return None
 
-    elif args['percentile'] == 'hist':
-        return filter_by_period(args['spatial'], ['19710101-20001231'],
-                                multistats(sesh,
-                                           ensemble_name='p2a_files',
-                                           model=model,
-                                           emission=args['emission'],
-                                           time=args['time'],
-                                           area=args['area'],
-                                           variable=args['variable'],
-                                           timescale=args['timescale'],
-                                           cell_method=args['cell_method']))
-
     else:
         return filter_by_period(args['spatial'], args['dates'],
                                 multistats(sesh,
