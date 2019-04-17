@@ -49,6 +49,9 @@ def filter_by_period(target, dates, periods):
 
 
 def get_nffd(fd, time, timescale):
+    """Given the number of frost days and a time period determine the number of
+       frost free days.
+    """
     # TODO: Consider 360 day calendars here?
     if fd is None:
         return None
