@@ -31,7 +31,7 @@ Install requirements.
 ### Run
 To run the rule engine and view the results use `process.py`.
 ```
-(venv)$ python scripts/process.py --csv rules.csv --date [date-option] --region [region-option]
+(venv)$ python scripts/process.py --csv rules.csv --date-range [date-option] --region [region-option]
 ```
 
 
@@ -64,7 +64,7 @@ Solution for this [issue](https://github.com/pacificclimate/climate-explorer-bac
 
 Open up the file that's causing the issue.
 ```
-$ vi test-venv/lib/python3.6/site-packages/ce/api/geo.py  
+$ vi venv/lib/python3.6/site-packages/ce/api/geo.py  
 ```
 
 Find the definition for the `make_mask_grid_key(...)` method and replace this chunk:
