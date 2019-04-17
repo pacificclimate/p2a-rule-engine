@@ -28,6 +28,8 @@ Install requirements.
 (venv)$ pip install -i https://pypi.pacificclimate.org/simple -r requirements.txt
 ```
 
+To connect to the database the script expects there to be a `.pgpass` file for it to read.
+
 ### Run
 To run the rule engine and view the results use `process.py`.
 ```
