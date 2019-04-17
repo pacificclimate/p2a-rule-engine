@@ -11,19 +11,20 @@ def get_region(region_name):
         'version': '1.0.0',
         'request': 'GetFeature',
         'typename': 'bc_regions:bc-regions-polygon',
-        'maxFeatures': '50',
+        'maxFeatures': '100',
         'outputFormat': 'csv'
     }
-    auth = ('admin', 'geoserver')
     url = "http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows"
-    data = requests.get(url, params=params, auth=auth)
+    data = requests.get(url, params=params)
 
     decoded_data = data.content.decode('utf-8')
     csv_data = csv.DictReader(decoded_data.splitlines(), delimiter=',')
 
+    # TODO: Missing region Boreal Plains
     region = {
+        'bc': 'British Columbia',
         'alberni_clayoquot': 'Alberni-Clayoquot',
-        # 'bc': '',
+        'boreal_plains': 'Boreal Plains',
         'bulkley_nechako': 'Bulkley-Nechako',
         'capital': 'Capital',
         'cariboo': 'Cariboo',
@@ -101,6 +102,9 @@ if __name__ == '__main__':
                         default='INFO')
     args = parser.parse_args()
     region = get_region(args.region)
+
+    if not region:
+        raise Exception('{} region was not found'.format(args.region))
 
     rules = resolve_rules(args.csv, args.date_range, region, args.log_level)
     pretty_print(rules)
