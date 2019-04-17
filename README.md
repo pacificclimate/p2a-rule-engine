@@ -15,7 +15,7 @@ Example output:
 ```
 
 ### Setup
-To run the program create and enter a python3 virtual environment.
+To run the program create and enter a python3 (3.6+) virtual environment.
 ```
 $python3 -m venv venv
 $source venv/bin/activate
@@ -52,7 +52,41 @@ Evaluate parse trees to determine truth value of each rule (evaluator.py)
 Return result dictionary {rule: True/False/Value} (resolver.py)
 ```
 
+### Testing
+Uses [pytest](https://github.com/pytest-dev/pytest).
+```
+pytest tests/ --cov --flake8 --cov-report term-missing
+```
+
 ### Troubleshooting
+#### Unhashable type: 'MaskedArray' error
+Solution for this [issue](https://github.com/pacificclimate/climate-explorer-backend/issues/97) is ongoing.  A temporary solution is to replace some code in the virtual environment.
+
+Open up the file that's causing the issue.
+```
+$ vi test-venv/lib/python3.6/site-packages/ce/api/geo.py  
+```
+
+Find the definition for the `make_mask_grid_key(...)` method and replace this chunk:
+```
+latsteps = nc.variables['lat'].shape[0]
+latmin = nc.variables['lat'][0]
+latmax = nc.variables['lat'][latsteps - 1]
+lonsteps = nc.variables['lon'].shape[0]
+lonmin = nc.variables['lon'][0]
+lonmax = nc.variables['lon'][lonsteps - 1]
+```
+With this:
+```
+latsteps = nc.variables['lat'].shape[0]
+latmin = np.min(nc.variables['lat'][:])
+latmax = np.max(nc.variables['lat'][:])
+lonsteps = nc.variables['lon'].shape[0]
+lonmin = np.min(nc.variables['lon'][:])
+lonmax = np.max(nc.variables['lon'][:])
+```
+This should take care of the issue.
+
 #### No such file or directory error
 In the case that an error in this form occurs:
 ```
@@ -64,9 +98,3 @@ Try the following:
 (venv)$ pip install rasterio==1.0.22 --no-binary rasterio
 ```
 This should fix the issue as it is likely that `rasterio` and `GDAL` were not working together properly.
-
-### Testing
-Uses [pytest](https://github.com/pytest-dev/pytest).
-```
-pytest tests/ --cov --flake8 --cov-report term-missing
-```
