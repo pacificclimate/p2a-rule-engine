@@ -65,72 +65,60 @@ def get_nffd(fd, time, timescale):
             return 92 - fd
         elif time == 3:
             return 91 - fd
+
+
+def calculate_result(to_calc, variables, time, timescale):
+    if {'tasmin', 'tasmax'}.issubset(variables):
+        try:
+            return mean(to_calc)
+        except TypeError as e:
+            logger.error('Unable to get mean of {} in model: {} error: {}'
+                         .format(to_calc, model, e))
+
+    val_to_calc, = to_calc
+    if 'fdETCCDI' in variables:
+        try:
+            return get_nffd(val_to_calc, time, timescale)
+        except TypeError as e:
+            logger.error('Unable to compute nffd from fd with {} error: {}'
+                         .format((val_to_calcc, time, timescale), e))
     else:
-        logger.warning(('Could not find matching time for time: {} and '
-                        'timescale: {}').format(time, timescale))
-        return None
+        return val_to_calc
 
 
 def query_backend(sesh, model, query_args):
     """Return the desired variable for a particular climate model"""
-    if type(query_args['variable']) is dict:
-        tasmin = filter_by_period(query_args['spatial'], query_args['dates'],
-                                  multistats(sesh,
-                                             ensemble_name=query_args['ensemble_name'],
-                                             model=model,
-                                             emission=query_args['emission'],
-                                             time=query_args['time'],
-                                             area=query_args['area'],
-                                             variable=query_args['variable']['min'],
-                                             timescale=query_args['timescale'],
-                                             cell_method=query_args['cell_method']))
-        tasmax = filter_by_period(query_args['spatial'], query_args['dates'],
-                                  multistats(sesh,
-                                             ensemble_name=query_args['ensemble_name'],
-                                             model=model,
-                                             emission=query_args['emission'],
-                                             time=query_args['time'],
-                                             area=query_args['area'],
-                                             variable=query_args['variable']['max'],
-                                             timescale=query_args['timescale'],
-                                             cell_method=query_args['cell_method']))
-        try:
-            return mean([tasmin, tasmax])
-        except TypeError as e:
-            logger.debug(('Unable to get mean of tasmin: {} and tasmax: {} in '
-                          'model: {} error: {}')
-                         .format(tasmin, tasmax, model, e))
-            return None
 
-    elif query_args['variable'] == 'fdETCCDI':
-        fd = filter_by_period(query_args['spatial'], query_args['dates'],
-                              multistats(sesh,
-                                         ensemble_name=query_args['ensemble_name'],
-                                         model=model,
-                                         emission=query_args['emission'],
-                                         time=query_args['time'],
-                                         area=query_args['area'],
-                                         variable=query_args['variable'],
-                                         timescale=query_args['timescale'],
-                                         cell_method=query_args['cell_method']))
-        try:
-            return get_nffd(fd, query_args['time'], query_args['timescale'])
-        except TypeError as e:
-            logger.warning('Unable to compute nffd from fd with {} error: {}'
-                           .format(fd, e))
-            return None
+    results = [
+        result for result in [
+            filter_by_period(
+                query_args['spatial'],
+                query_args['dates'],
+                multistats(
+                    sesh,
+                    ensemble_name=query_args['ensemble_name'],
+                    model=model,
+                    emission=query_args['emission'],
+                    time=query_args['time'],
+                    area=query_args['area'],
+                    variable=var,
+                    timescale=query_args['timescale'],
+                    cell_method=query_args['cell_method']
+                )
+            )
+            for var in query_args['variable']
+        ] if result is not None
+    ]
 
+    if not results:
+        return None
     else:
-        return filter_by_period(query_args['spatial'], query_args['dates'],
-                                multistats(sesh,
-                                           ensemble_name=query_args['ensemble_name'],
-                                           model=model,
-                                           emission=query_args['emission'],
-                                           time=query_args['time'],
-                                           area=query_args['area'],
-                                           variable=query_args['variable'],
-                                           timescale=query_args['timescale'],
-                                           cell_method=query_args['cell_method']))
+        return calculate_result(
+            results,
+            query_args['variable'],
+            query_args['time'],
+            query_args['timescale']
+        )
 
 
 def get_models(sesh, percentile, ensemble):
@@ -147,12 +135,12 @@ def get_models(sesh, percentile, ensemble):
 
 def translate_variable(variable):
     variables = {
-        'temp': {'min': 'tasmin', 'max': 'tasmax'},
-        'prec': 'pr',
-        'dg05': 'gdd',
-        'nffd': 'fdETCCDI',
-        'pass': 'prsn',
-        'dl18': 'hdd'
+        'temp': ['tasmin', 'tasmax'],
+        'prec': ['pr'],
+        'dg05': ['gdd'],
+        'nffd': ['fdETCCDI'],
+        'pass': ['prsn'],
+        'dl18': ['hdd']
     }
     return variables[variable]
 
