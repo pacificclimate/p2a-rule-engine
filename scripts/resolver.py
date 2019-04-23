@@ -19,7 +19,7 @@ def setup_logging(log_level):
     return logger
 
 
-def resolve_rules(csv, date_range, region, log_level='INFO'):
+def resolve_rules(csv, date_range, region, ensemble, connection_string, log_level='INFO'):
     logger = setup_logging(log_level)
 
     # read csv
@@ -43,10 +43,9 @@ def resolve_rules(csv, date_range, region, log_level='INFO'):
 
     # get values for all variables we will need for evaluation
     logger.info('Collecting variables')
-    connection_string = 'postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta'
     Session = sessionmaker(create_engine(connection_string))
     sesh = Session()
-    collected_variables = {var: get_variables(sesh, var, date_range, region)
+    collected_variables = {var: get_variables(sesh, var, ensemble, date_range, region)
                            for var in variables}
 
     # partially define dict accessor to abstract it for the evaluator

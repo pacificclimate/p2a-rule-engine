@@ -112,8 +112,14 @@ if __name__ == '__main__':
                         required=True)
     parser.add_argument('-r', '--region', help='Selected region',
                         required=True, choices=regions.keys())
-    parser.add_argument('-u', '--url', help='Geoserver URL', required=True,
+    parser.add_argument('-u', '--url', help='Geoserver URL',
                         default="http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows")
+    parser.add_argument('-x', '--connection-string',
+                        help='Database connection string',
+                        default='postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta')
+    parser.add_argument('-e', '--ensemble',
+                        help='Ensemble name filter for data files',
+                        default='p2a_files')
     parser.add_argument('-l', '--log-level', help='Logging level',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR',
                                  'CRITICAL'],
@@ -124,5 +130,6 @@ if __name__ == '__main__':
     if not region:
         raise Exception('{} region was not found'.format(args.region))
 
-    rules = resolve_rules(args.csv, args.date_range, region, args.log_level)
+    rules = resolve_rules(args.csv, args.date_range, region, args.ensemble,
+                          args.connection_string, args.log_level)
     pretty_print(rules)

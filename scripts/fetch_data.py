@@ -71,29 +71,29 @@ def get_nffd(fd, time, timescale):
         return None
 
 
-def query_backend(sesh, model, args):
+def query_backend(sesh, model, query_args):
     """Return the desired variable for a particular climate model"""
-    if type(args['variable']) is dict:
-        tasmin = filter_by_period(args['spatial'], args['dates'],
+    if type(query_args['variable']) is dict:
+        tasmin = filter_by_period(query_args['spatial'], query_args['dates'],
                                   multistats(sesh,
-                                             ensemble_name='p2a_files',
+                                             ensemble_name=query_args['ensemble_name'],
                                              model=model,
-                                             emission=args['emission'],
-                                             time=args['time'],
-                                             area=args['area'],
-                                             variable=args['variable']['min'],
-                                             timescale=args['timescale'],
-                                             cell_method=args['cell_method']))
-        tasmax = filter_by_period(args['spatial'], args['dates'],
+                                             emission=query_args['emission'],
+                                             time=query_args['time'],
+                                             area=query_args['area'],
+                                             variable=query_args['variable']['min'],
+                                             timescale=query_args['timescale'],
+                                             cell_method=query_args['cell_method']))
+        tasmax = filter_by_period(query_args['spatial'], query_args['dates'],
                                   multistats(sesh,
-                                             ensemble_name='p2a_files',
+                                             ensemble_name=query_args['ensemble_name'],
                                              model=model,
-                                             emission=args['emission'],
-                                             time=args['time'],
-                                             area=args['area'],
-                                             variable=args['variable']['max'],
-                                             timescale=args['timescale'],
-                                             cell_method=args['cell_method']))
+                                             emission=query_args['emission'],
+                                             time=query_args['time'],
+                                             area=query_args['area'],
+                                             variable=query_args['variable']['max'],
+                                             timescale=query_args['timescale'],
+                                             cell_method=query_args['cell_method']))
         try:
             return mean([tasmin, tasmax])
         except TypeError as e:
@@ -102,130 +102,132 @@ def query_backend(sesh, model, args):
                          .format(tasmin, tasmax, model, e))
             return None
 
-    elif args['variable'] == 'fdETCCDI':
-        fd = filter_by_period(args['spatial'], args['dates'],
+    elif query_args['variable'] == 'fdETCCDI':
+        fd = filter_by_period(query_args['spatial'], query_args['dates'],
                               multistats(sesh,
-                                         ensemble_name='p2a_files',
+                                         ensemble_name=query_args['ensemble_name'],
                                          model=model,
-                                         emission=args['emission'],
-                                         time=args['time'],
-                                         area=args['area'],
-                                         variable=args['variable'],
-                                         timescale=args['timescale'],
-                                         cell_method=args['cell_method']))
+                                         emission=query_args['emission'],
+                                         time=query_args['time'],
+                                         area=query_args['area'],
+                                         variable=query_args['variable'],
+                                         timescale=query_args['timescale'],
+                                         cell_method=query_args['cell_method']))
         try:
-            return get_nffd(fd, args['time'], args['timescale'])
+            return get_nffd(fd, query_args['time'], query_args['timescale'])
         except TypeError as e:
             logger.warning('Unable to compute nffd from fd with {} error: {}'
                            .format(fd, e))
             return None
 
     else:
-        return filter_by_period(args['spatial'], args['dates'],
+        return filter_by_period(query_args['spatial'], query_args['dates'],
                                 multistats(sesh,
-                                           ensemble_name='p2a_files',
+                                           ensemble_name=query_args['ensemble_name'],
                                            model=model,
-                                           emission=args['emission'],
-                                           time=args['time'],
-                                           area=args['area'],
-                                           variable=args['variable'],
-                                           timescale=args['timescale'],
-                                           cell_method=args['cell_method']))
+                                           emission=query_args['emission'],
+                                           time=query_args['time'],
+                                           area=query_args['area'],
+                                           variable=query_args['variable'],
+                                           timescale=query_args['timescale'],
+                                           cell_method=query_args['cell_method']))
 
 
-def get_models(sesh, percentile):
+def get_models(sesh, percentile, ensemble):
     """Return a list of models needed to compute the percentile"""
     historical_baseline = 'anusplin'
     if percentile == 'hist':
         return [historical_baseline]
     else:
         # return all models EXCEPT for the historical baseline
-        all_models = models(sesh, ensemble_name='p2a_files')
+        all_models = models(sesh, ensemble_name=query_args['ensemble_name'])
         all_models.remove(historical_baseline)
         return all_models
 
 
-def prep_args(variable, time_of_year, temporal, spatial, percentile, area,
-              date_range):
-    """Given a set of arguments return a dictionary containing their CE
-       counterparts
-    """
-    args = {}
-
-    ce_variable = {
+def translate_variable(variable):
+    variables = {
         'temp': {'min': 'tasmin', 'max': 'tasmax'},
         'prec': 'pr',
         'dg05': 'gdd',
         'nffd': 'fdETCCDI',
         'pass': 'prsn',
         'dl18': 'hdd'
-    }[variable]
-    args['variable'] = ce_variable
+    }
+    return variables[variable]
 
-    ce_time, ce_timescale = {
-        'ann': ['0', 'yearly'],
-        'djf': ['0', 'seasonal'],
-        'mam': ['1', 'seasonal'],
-        'jja': ['2', 'seasonal'],
-        'son': ['3', 'seasonal'],
-        'jan': ['0', 'monthly'],
-        'feb': ['1', 'monthly'],
-        'mar': ['2', 'monthly'],
-        'apr': ['3', 'monthly'],
-        'may': ['4', 'monthly'],
-        'jun': ['5', 'monthly'],
-        'jul': ['6', 'monthly'],
-        'aug': ['7', 'monthly'],
-        'sep': ['8', 'monthly'],
-        'oct': ['9', 'monthly'],
-        'nov': ['10', 'monthly'],
-        'dec': ['11', 'monthly'],
-    }[time_of_year]
-    args['time'] = ce_time
-    args['timescale'] = ce_timescale
 
-    ce_cell_method = {
+def translate_time(time_of_year):
+    times = {
+        ('ann', 'djf', 'jan'): 0,
+        ('mam', 'feb'): 1,
+        ('jja', 'mar'): 2,
+        ('son', 'apr'): 3,
+        ('may'): 4,
+        ('jun'): 5,
+        ('jul'): 6,
+        ('aug'): 7,
+        ('sep'): 8,
+        ('oct'): 9,
+        ('nov'): 10,
+        ('dec'): 11
+    }
+    return next(time for period, time in times.items() if time_of_year in period)
+
+
+def translate_timescale(time_of_year):
+    timescales = {
+        ('ann'): 'yearly',
+        ('djf', 'mam', 'jja', 'son'): 'seasonal',
+        ('jan', 'feb', 'mar', 'apr', 'may', 'jun',
+         'jul', 'aug', 'sep', 'oct', 'nov', 'dec'): 'monthly',
+    }
+    return next(timescale for period, timescale in timescales.items() if time_of_year in period)
+
+
+def translate_temporal(temporal):
+    cell_methods = {
         'iastddev': 'standard_deviation',
         'iamean': 'mean'
-    }[temporal]
-    args['cell_method'] = ce_cell_method
+    }
+    return cell_methods[temporal]
 
-    ce_spatial = {
+
+def translate_spatial(spatial):
+    spatial_options = {
         's0p': 'min',
         's100p': 'max',
         'smean': 'mean'
-    }[spatial]
-    args['spatial'] = ce_spatial
+    }
+    return spatial_options[spatial]
 
-    ce_percentile = {
+
+def translate_percentile(percentile):
+    percentiles = {
         'e25p': 25,
         'e75p': 75,
         'hist': 100
-    }[percentile]
-    args['percentile'] = ce_percentile
+    }
+    return percentiles[percentile]
+
+
+def translate_emission(percentile, variable):
+    emissions = {
+        ('temp', 'prec', 'dg05', 'pass', 'dl18'): 'historical,rcp85',
+        ('nffd'): 'historical, rcp85',
+        ('hist'): ''  # historical has no emission scenario
+    }
 
     if percentile == 'hist':
         emission = percentile
     else:
         emission = variable
-    ce_emission = {
-        'temp': 'historical,rcp85',
-        'prec': 'historical,rcp85',
-        'dg05': 'historical,rcp85',
-        'nffd': 'historical, rcp85',
-        'pass': 'historical,rcp85',
-        'dl18': 'historical,rcp85',
-        'hist': ''  # historical has no emission scenario
-    }[emission]
-    args['emission'] = ce_emission
 
-    args['area'] = area['the_geom']
+    return next(scenario for var, scenario in emissions.items() if emission in var)
 
-    if percentile == 'hist':
-        dates = percentile
-    else:
-        dates = date_range
-    ce_dates = {
+
+def translate_date(percentile, date_range):
+    dates = {
         'hist': ['19710101-20001231'],
         '2020': ['20100101-20391231',
                  '20110101-20400101',
@@ -236,13 +238,36 @@ def prep_args(variable, time_of_year, temporal, spatial, percentile, area,
         '2080': ['20700101-20991231',
                  '20710101-21000101',
                  '20700101-20991230']
-    }[dates]
-    args['dates'] = ce_dates
+    }
 
-    return args
+    if percentile == 'hist':
+        period = percentile
+    else:
+        period = date_range
+
+    return dates[period]
 
 
-def get_ce_data(sesh, var_name, date_range, area):
+def translate_args(variable, time_of_year, temporal, spatial, percentile, area,
+                   date_range, ensemble):
+    """Given a set of arguments return a dictionary containing their CE
+       counterparts
+    """
+    return {
+        'variable': translate_variable(variable),
+        'time': translate_time(time_of_year),
+        'timescale': translate_timescale(time_of_year),
+        'cell_method': translate_temporal(temporal),
+        'spatial': translate_spatial(spatial),
+        'percentile': translate_percentile(percentile),
+        'emission': translate_emission(percentile, variable),
+        'area': area['the_geom'],
+        'dates': translate_date(percentile, date_range),
+        'ensemble_name': ensemble
+    }
+
+
+def get_ce_data(sesh, var_name, ensemble, date_range, area):
     """Parse a given variable name and into parameters that are used to query
        the Climate Explorer backend.
     """
@@ -254,21 +279,21 @@ def get_ce_data(sesh, var_name, date_range, area):
                      .format(var_name, e))
         return None
 
-    args = prep_args(variable, time_of_year, temporal, spatial,
-                     percentile, area, date_range)
-    models = get_models(sesh, percentile)
+    query_args = translate_args(variable, time_of_year, temporal, spatial,
+                                percentile, area, date_range, ensemble)
+    models = get_models(sesh, percentile, ensemble)
 
     result = [
-        data for data in [query_backend(sesh, model, args) for model in models]
+        data for data in [query_backend(sesh, model, query_args) for model in models]
         if data is not None
     ]
 
-    return np.asscalar(np.percentile(result, args['percentile']))
+    return np.asscalar(np.percentile(result, query_args['percentile']))
 
 
-def get_variables(sesh, var_name, date_range, area):
+def get_variables(sesh, var_name, ensemble, date_range, area):
     """Given a variable name return the value by querying the CE backend"""
     if var_name == 'region_oncoast':
         return area['coast_bool'] == '1'
     else:
-        return get_ce_data(sesh, var_name, date_range, area)
+        return get_ce_data(sesh, var_name, ensemble, date_range, area)
