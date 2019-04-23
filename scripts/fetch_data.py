@@ -59,11 +59,11 @@ def get_nffd(fd, time, timescale):
     if timescale == 'yearly':
         return 365 - fd
     elif timescale == 'seasonal':
-        if time == '0':
+        if time == 0:
             return 89 - fd
-        elif time == '1' or time == '2':
+        elif time == 1 or time == 2:
             return 92 - fd
-        elif time == '3':
+        elif time == 3:
             return 91 - fd
     else:
         logger.warning(('Could not find matching time for time: {} and '
