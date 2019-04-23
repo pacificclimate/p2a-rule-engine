@@ -65,7 +65,7 @@ regions = {
 }
 
 
-def get_region(region_name):
+def get_region(region_name, url):
     params = {
         'service': 'WFS',
         'version': '1.0.0',
@@ -74,7 +74,6 @@ def get_region(region_name):
         'maxFeatures': '100',
         'outputFormat': 'csv'
     }
-    url = "http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows"
     data = requests.get(url, params=params)
 
     decoded_data = data.content.decode('utf-8')
@@ -102,12 +101,14 @@ if __name__ == '__main__':
                         required=True)
     parser.add_argument('-r', '--region', help='Selected region',
                         required=True, choices=regions.keys())
+    parser.add_argument('-u', '--url', help='Geoserver URL', required=True,
+                        default="http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows")
     parser.add_argument('-l', '--log-level', help='Logging level',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR',
                                  'CRITICAL'],
                         default='INFO')
     args = parser.parse_args()
-    region = get_region(args.region)
+    region = get_region(args.region, args.url)
 
     if not region:
         raise Exception('{} region was not found'.format(args.region))
