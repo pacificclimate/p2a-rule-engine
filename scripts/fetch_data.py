@@ -36,6 +36,16 @@ def read_csv(filename):
 def filter_by_period(target, dates, periods):
     """Search through dictionary containing data for different 30 year periods,
        find the desired period and return the target variable.
+
+       Periods is the result of the call to multistats. It is a dictionary
+       containing file ids as keys and values that are dictionaries as well.
+       The purpose of this method is to match the date substring in the file id
+       with the dates parameter and return the target value.
+
+       The dates parameter is a list of all the known dates found in the ids
+       for each 30 year period.
+
+       The target is data we are interested in (mean, max, min, etc...)
     """
     for key in periods.keys():
         for date in dates:
@@ -43,9 +53,8 @@ def filter_by_period(target, dates, periods):
                 try:
                     return periods[key][target]
                 except KeyError as e:
-                    logger.warning('Bad target variable: {} error: {}'
-                                   .format(target, e))
-                    return None
+                    logger.error('Bad target variable: {} error: {}'
+                                 .format(target, e))
 
 
 def get_nffd(fd, time, timescale):
