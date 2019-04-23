@@ -61,10 +61,7 @@ def get_nffd(fd, time, timescale):
     """Given the number of frost days and a time period determine the number of
        frost free days.
     """
-    # TODO: Consider 360 day calendars here?
-    if fd is None:
-        return None
-
+    # TODO: Implement 360 day calendars
     if timescale == 'yearly':
         return 365 - fd
     elif timescale == 'seasonal':
@@ -76,15 +73,21 @@ def get_nffd(fd, time, timescale):
             return 91 - fd
 
 
-def calculate_result(to_calc, variables, time, timescale):
+def calculate_result(vals_to_calc, variables, time, timescale):
+    '''Given some query results determine which calculation is required
+
+       There are some cases where the database data does not give us exactly
+       what we need.  Here we check for those cases and ensure that the output
+       is what the rules require.
+    '''
     if {'tasmin', 'tasmax'}.issubset(variables):
         try:
-            return mean(to_calc)
+            return mean(vals_to_calc)
         except TypeError as e:
             logger.error('Unable to get mean of {} in model: {} error: {}'
-                         .format(to_calc, model, e))
+                         .format(vals_to_calc, model, e))
 
-    val_to_calc, = to_calc
+    val_to_calc, = vals_to_calc
     if 'fdETCCDI' in variables:
         try:
             return get_nffd(val_to_calc, time, timescale)
@@ -97,7 +100,6 @@ def calculate_result(to_calc, variables, time, timescale):
 
 def query_backend(sesh, model, query_args):
     """Return the desired variable for a particular climate model"""
-
     results = [
         result for result in [
             filter_by_period(
