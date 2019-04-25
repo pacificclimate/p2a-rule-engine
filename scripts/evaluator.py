@@ -17,13 +17,13 @@ operands = {
 }
 
 
-def get_symbol_value(symbol, rules, variable_getter):
+def get_symbol_value(symbol, rule_getter, variable_getter):
     """Given the name of a terminal symbol in an rule expression, return either
        the parse tree for that symbol if it is a rule either the value of that
        symbol if it is a variable.
     """
     if 'rule_' in symbol:
-        return rules[symbol]
+        return rule_getter(symbol)
     else:
         return variable_getter(symbol)
 
@@ -38,7 +38,7 @@ def cond_operator(cond, t_val, f_val):
         return f_val
 
 
-def evaluate_rule(rule, rules, variable_getter):
+def evaluate_rule(rule, rule_getter, variable_getter):
     """This method uses a helper method to recursively compute the value of the
        rule expression.
     """
@@ -71,10 +71,10 @@ def evaluate_rule(rule, rules, variable_getter):
                                  evaluate_expression(expression[3]))
         elif isinstance(expression, str):
             return evaluate_expression(get_symbol_value(expression,
-                                                        rules,
+                                                        rule_getter,
                                                         variable_getter))
         else:
-            logger.warning('Unable to process expression')
-            return None
+            logger.error('Unable to process expression {}'.format(expression))
+            raise NotImplementedError
 
     return evaluate_expression(rule)
