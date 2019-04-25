@@ -25,8 +25,9 @@ def test_build_parse_tree_error_handle(rule, expected):
     test_vars = None
     for r in rule:
         try:
-            test_output, test_vars = build_parse_tree(r)
+            test_output, test_vars, test_region_bool = build_parse_tree(r)
         except SyntaxError as e:
             print('Error has occured: {}'.format(e))
     assert test_output == expected
-    assert test_vars == set()
+    assert test_vars == {}
+    assert test_region_bool is None

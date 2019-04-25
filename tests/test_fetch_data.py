@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.fetch_data import read_csv, filter_by_period, prep_args, \
+from scripts.fetch_data import read_csv, filter_by_period, translate_args, \
     get_nffd
 
 
@@ -51,7 +51,8 @@ def test_filter_by_period_bad_vars(target, dates, ce_response):
 
 
 @pytest.mark.parametrize(('variable', 'time_of_year', 'cell_method', 'spatial',
-                          'percentile', 'area', 'date_range', 'expected'), [
+                          'percentile', 'area', 'date_range', 'ensemble',
+                          'expected'), [
     ('temp', 'djf', 'iamean', 'smean', 'e25p',
      {'the_geom':  """POLYGON((-122.70904541015625 49.31438004800689,
             -122.92327880859375 49.35733376286064,-123.14849853515625
@@ -62,13 +63,13 @@ def test_filter_by_period_bad_vars(target, dates, ce_response):
             49.023461463214126,-122.46734619140625
             49.13500260581219,-122.50579833984375
             49.31079887964633,-122.70904541015625 49.31438004800689))"""},
-     '2020',
-     {'variable': {'min': 'tasmin', 'max': 'tasmax'},
+     '2020', 'p2a_files',
+     {'variable': ['tasmin', 'tasmax'],
       'cell_method': 'mean',
       'spatial': 'mean',
       'percentile': 25,
       'emission': 'historical,rcp85',
-      'time': '0',
+      'time': 0,
       'timescale':
       'seasonal',
       'area': """POLYGON((-122.70904541015625 49.31438004800689,
@@ -80,23 +81,24 @@ def test_filter_by_period_bad_vars(target, dates, ce_response):
             49.023461463214126,-122.46734619140625
             49.13500260581219,-122.50579833984375
             49.31079887964633,-122.70904541015625 49.31438004800689))""",
-      'dates': ['20100101-20391231', '20110101-20400101', '20100101-20391230']
+      'dates': ['20100101-20391231', '20110101-20400101', '20100101-20391230'],
+      'ensemble_name': 'p2a_files'
       })
 ])
-def test_prep_args(variable, time_of_year, cell_method, spatial, percentile,
-        area, date_range, expected): # noqa
-    test_args = prep_args(variable, time_of_year, cell_method, spatial,
-                          percentile, area, date_range)
+def test_translate_args(variable, time_of_year, cell_method, spatial,
+        percentile, area, date_range, ensemble, expected): # noqa
+    test_args = translate_args(variable, time_of_year, cell_method, spatial,
+                               percentile, area, date_range, ensemble)
     for key in test_args.keys():
         assert test_args[key] == expected[key]
 
 
 @pytest.mark.parametrize(('fd', 'time', 'timescale', 'expected'), [
-    (50, '0', 'seasonal', 39),
-    (60, '1', 'seasonal', 32),
-    (70, '2', 'seasonal', 22),
-    (80, '3', 'seasonal', 11),
-    (150, '0', 'yearly', 215)
+    (50, 0, 'seasonal', 39),
+    (60, 1, 'seasonal', 32),
+    (70, 2, 'seasonal', 22),
+    (80, 3, 'seasonal', 11),
+    (150, 0, 'yearly', 215)
 ])
 def test_get_nffd(fd, time, timescale, expected):
     assert get_nffd(fd, time, timescale) == expected

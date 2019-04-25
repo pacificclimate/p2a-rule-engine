@@ -7,17 +7,18 @@ from scripts.evaluator import get_symbol_value, cond_operator, \
 from scripts.fetch_data import get_dict_val
 
 
-@pytest.mark.parametrize(('symbol', 'rules', 'variable_getter', 'expected'), [
-    ('rule_ten', {'rule_ten': 10}, None, 10),
-    ('temp_djf_iamean_s0p_hist', None,
-     partial(get_dict_val, {'temp_djf_iamean_s0p_hist': -10}), -10)
-])
-def test_get_symbol_value(symbol, rules, variable_getter, expected):
-    assert expected == get_symbol_value(symbol, rules, variable_getter)
+@pytest.mark.parametrize(
+    ('symbol', 'rule_getter', 'variable_getter', 'expected'), [
+        ('rule_ten', partial(get_dict_val, {'rule_ten': 10}), None, 10),
+        ('temp_djf_iamean_s0p_hist', None,
+         partial(get_dict_val, {'temp_djf_iamean_s0p_hist': -10}), -10)
+    ])
+def test_get_symbol_value(symbol, rule_getter, variable_getter, expected):
+    assert expected == get_symbol_value(symbol, rule_getter, variable_getter)
 
 
 @pytest.mark.parametrize(('symbol', 'rules', 'variable_getter'), [
-    ('rule_ten', {'rule_nine': 9}, None)
+    ('rule_ten', partial(get_dict_val, {'rule_nine': 9}), None)
 ])
 def test_get_symbol_value_dict_error_handle(symbol, rules, variable_getter):
     with pytest.raises(KeyError):
@@ -48,8 +49,9 @@ def test_evaluate_rule(rule, rules, variable_getter, expected):
     assert expected == evaluate_rule(rule, rules, variable_getter)
 
 
-@pytest.mark.parametrize(('rule', 'rules', 'variable_getter', 'expected'), [
-    (('BAD_EXPR', Decimal(5), Decimal(6)), None, None, None),
+@pytest.mark.parametrize(('rule', 'rules', 'variable_getter'), [
+    (('BAD_EXPR', Decimal(5), Decimal(6)), None, None),
 ])
-def test_evaluate_rule_bad_expression(rule, rules, variable_getter, expected):
-    assert expected == evaluate_rule(rule, rules, variable_getter)
+def test_evaluate_rule_bad_expression(rule, rules, variable_getter):
+    with pytest.raises(NotImplementedError):
+        evaluate_rule(rule, rules, variable_getter)
