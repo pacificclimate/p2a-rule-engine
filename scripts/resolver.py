@@ -29,32 +29,60 @@ def resolve_rules(csv, date_range, region, ensemble, connection_string, log_leve
     # create parse tree dictionary and gather unique variables
     logger.info('Building parse tree')
     parse_trees = {}
-    variables = set()
+    variables = {}
+    region_variable = None
     for rule, condition in rules.items():
         try:
-            parse_trees[rule], vars = build_parse_tree(condition)
+            parse_trees[rule], vars, region_var = build_parse_tree(condition)
         except SyntaxError as e:
             logger.warning('{}, rule will be excluded'.format(e))
             continue
 
+        # check region var
+        if region_var:
+            region_variable = region_var
+
         # add unique variables to set
-        for var in vars:
-            variables.add(var)
+        for name, values in vars.items():
+            if name not in variables.keys():
+                variables[name] = values
 
     # get values for all variables we will need for evaluation
     logger.info('Collecting variables')
     Session = sessionmaker(create_engine(connection_string))
     sesh = Session()
-    collected_variables = {var: get_variables(sesh, var, ensemble, date_range, region)
-                           for var in variables}
+
+    # gather variable data
+    collected_variables = {}
+    for name, values in variables.items():
+        try:
+            var = get_variables(sesh, values, ensemble, date_range, region)
+        except Exception as e:
+            logger.warning('Error: {} while collecting variable: {}'
+                           .format(e, name))
+        if var is not None:
+            collected_variables[name] = var
+
+    if region_variable:
+        collected_variables[region_variable] = int(region['coast_bool'])
+
+    logger.info('')
+    logger.info('{}/{} variables collected'.format(len(collected_variables),
+                                                   len(variables) + 1))
 
     # partially define dict accessor to abstract it for the evaluator
     variable_getter = partial(get_dict_val, collected_variables)
+    rule_getter = partial(get_dict_val, parse_trees)
 
     # evaluate parse trees
     logger.info('Evaluating parse trees')
-    result = {id: evaluate_rule(rule, parse_trees, variable_getter)
-              for id, rule in parse_trees.items()}
+    results = {}
+    for id, rule in parse_trees.items():
+        try:
+            results[id] = evaluate_rule(rule, rule_getter, variable_getter)
+        except Exception as e:
+            logger.warning('Error {} while resolving {}'.format(e, id))
 
-    logger.info('Rules resolved')
-    return result
+    logger.info('{}/{} rules resolved'.format(len(results), len(parse_trees)))
+    logger.info('Process complete')
+    return results
