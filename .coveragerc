@@ -4,4 +4,4 @@
     omit=scripts/resolver.py, scripts/process.py
 
 [report]
-    fail_under = 50
+    fail_under = 75
