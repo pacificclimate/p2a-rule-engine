@@ -12,12 +12,7 @@ logger = logging.getLogger('scripts')
 
 def get_dict_val(dict, val):
     """Given a dictionary key name return the associated value"""
-    try:
-        return dict[val]
-    except KeyError as e:
-        logger.warning('Unable to get val: {} from dict: {} error: {}'
-                       .format(val, dict, e))
-        return None
+    return dict[val]
 
 
 def read_csv(filename):
@@ -100,46 +95,34 @@ def calculate_result(vals_to_calc, variables, time, timescale):
 
 def query_backend(sesh, model, query_args):
     """Return the desired variable for a particular climate model"""
-    results = [
-        result for result in [
-            filter_by_period(
-                query_args['spatial'],
-                query_args['dates'],
-                multistats(
-                    sesh,
-                    ensemble_name=query_args['ensemble_name'],
-                    model=model,
-                    emission=query_args['emission'],
-                    time=query_args['time'],
-                    area=query_args['area'],
-                    variable=var,
-                    timescale=query_args['timescale'],
-                    cell_method=query_args['cell_method']
-                )
+    return [
+        filter_by_period(
+            query_args['spatial'],
+            query_args['dates'],
+            multistats(
+                sesh,
+                ensemble_name=query_args['ensemble_name'],
+                model=model,
+                emission=query_args['emission'],
+                time=query_args['time'],
+                area=query_args['area'],
+                variable=var,
+                timescale=query_args['timescale'],
+                cell_method=query_args['cell_method']
             )
-            for var in query_args['variable']
-        ] if result is not None
+        )
+        for var in query_args['variable']
     ]
 
-    if not results:
-        return None
-    else:
-        return calculate_result(
-            results,
-            query_args['variable'],
-            query_args['time'],
-            query_args['timescale']
-        )
 
-
-def get_models(sesh, percentile, ensemble):
+def get_models(sesh, hist_var, ensemble):
     """Return a list of models needed to compute the percentile"""
     historical_baseline = 'anusplin'
-    if percentile == 'hist':
+    if hist_var == 'hist':
         return [historical_baseline]
     else:
         # return all models EXCEPT for the historical baseline
-        all_models = models(sesh, ensemble_name=query_args['ensemble_name'])
+        all_models = models(sesh, ensemble_name=ensemble)
         all_models.remove(historical_baseline)
         return all_models
 
@@ -266,33 +249,36 @@ def translate_args(variable, time_of_year, temporal, spatial, percentile, area,
     }
 
 
-def get_ce_data(sesh, var_name, ensemble, date_range, area):
-    """Parse a given variable name and into parameters that are used to query
-       the Climate Explorer backend.
-    """
-    try:
-        variable, time_of_year, temporal, \
-            spatial, percentile = var_name.split('_')
-    except ValueError as e:
-        logger.error('Error: Unable to read variable name {} error: {}'
-                     .format(var_name, e))
-        return None
+def get_variables(sesh, variables, ensemble, date_range, area):
+    """Given a variable name return the value by querying the CE backend"""
+    logger.info('')
+    logger.info('Translating variables for query')
+    query_args = translate_args(
+        variables['variable'], variables['time_of_year'], variables['temporal'],
+        variables['spatial'], variables['percentile'], area, date_range,
+        ensemble
+    )
 
-    query_args = translate_args(variable, time_of_year, temporal, spatial,
-                                percentile, area, date_range, ensemble)
-    models = get_models(sesh, percentile, ensemble)
+    logger.info('Collecting models')
+    models = get_models(sesh, variables['percentile'], ensemble)
 
-    result = [
-        data for data in [query_backend(sesh, model, query_args) for model in models]
-        if data is not None
+    var_name = '_'.join([variables['variable'], variables['time_of_year'],
+                         variables['temporal'], variables['spatial'],
+                         variables['percentile']])
+
+    logger.info('Fetching data for {}'.format(var_name))
+
+    results = [
+        calculate_result(query_data, query_args['variable'], query_args['time'],
+                         query_args['timescale'])
+        for query_data in [
+            query_backend(sesh, model, query_args) for model in models
+        ]
+        if not query_data.count(None)
     ]
 
-    return np.asscalar(np.percentile(result, query_args['percentile']))
-
-
-def get_variables(sesh, var_name, ensemble, date_range, area):
-    """Given a variable name return the value by querying the CE backend"""
-    if var_name == 'region_oncoast':
-        return area['coast_bool'] == '1'
+    if not results:
+        logger.warning('Unable to get data for {}'.format(var_name))
+        return None
     else:
-        return get_ce_data(sesh, var_name, ensemble, date_range, area)
+        return np.percentile(results, query_args['percentile'])
