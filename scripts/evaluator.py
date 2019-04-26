@@ -42,7 +42,6 @@ def evaluate_rule(rule, rule_getter, variable_getter):
     """This method uses a helper method to recursively compute the value of the
        rule expression.
     """
-
     def evaluate_expression(expression):
         """Evaluate the given expression."""
         # base case

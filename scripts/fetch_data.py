@@ -128,6 +128,7 @@ def get_models(sesh, hist_var, ensemble):
 
 
 def translate_variable(variable):
+    '''Given a variable component, translate it to the CE equivalent'''
     variables = {
         'temp': ['tasmin', 'tasmax'],
         'prec': ['pr'],
@@ -140,6 +141,9 @@ def translate_variable(variable):
 
 
 def translate_time(time_of_year):
+    '''Given a time of year component, translate it to the CE equivalent
+       time.
+    '''
     times = {
         ('ann', 'djf', 'jan'): 0,
         ('mam', 'feb'): 1,
@@ -158,6 +162,9 @@ def translate_time(time_of_year):
 
 
 def translate_timescale(time_of_year):
+    '''Given a time of year component, translate it to the CE equivalent
+       timescale.
+    '''
     timescales = {
         ('ann'): 'yearly',
         ('djf', 'mam', 'jja', 'son'): 'seasonal',
@@ -168,6 +175,7 @@ def translate_timescale(time_of_year):
 
 
 def translate_temporal(temporal):
+    '''Given a temporal component, translate it to the CE equivalent'''
     cell_methods = {
         'iastddev': 'standard_deviation',
         'iamean': 'mean'
@@ -176,6 +184,7 @@ def translate_temporal(temporal):
 
 
 def translate_spatial(spatial):
+    '''Given a spatial component, translate it to the CE equivalent'''
     spatial_options = {
         's0p': 'min',
         's100p': 'max',
@@ -185,6 +194,7 @@ def translate_spatial(spatial):
 
 
 def translate_percentile(percentile):
+    '''Given a percentile component, translate it to the CE equivalent'''
     percentiles = {
         'e25p': 25,
         'e75p': 75,
@@ -194,6 +204,9 @@ def translate_percentile(percentile):
 
 
 def translate_emission(percentile, variable):
+    '''Given emission and variable components, translate them into the CE
+       equivalent emission.
+    '''
     emissions = {
         ('temp', 'prec', 'dg05', 'pass', 'dl18'): 'historical,rcp85',
         ('nffd'): 'historical, rcp85',
@@ -209,6 +222,9 @@ def translate_emission(percentile, variable):
 
 
 def translate_date(percentile, date_range):
+    '''Given percentile and date range components, translate them into the CE
+       equivalent dates.
+    '''
     dates = {
         'hist': ['19710101-20001231'],
         '2020': ['20100101-20391231',
@@ -250,7 +266,12 @@ def translate_args(variable, time_of_year, temporal, spatial, percentile, area,
 
 
 def get_variables(sesh, variables, ensemble, date_range, area):
-    """Given a variable name return the value by querying the CE backend"""
+    """Given a variable name return the value by querying the CE backend
+
+      The return value from this method will either be a single value or None.
+      This is to handle the case where the database does not contain to data
+      the query is searching for.
+    """
     logger.info('')
     logger.info('Translating variables for query')
     query_args = translate_args(

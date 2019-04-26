@@ -20,6 +20,19 @@ def setup_logging(log_level):
 
 
 def resolve_rules(csv, date_range, region, ensemble, connection_string, log_level='INFO'):
+    '''Given a range of parameters run the rule engine
+
+       This script controls the flow of the rule engine.  It is responsible for
+       calling each of the components (parser, data fetch, evaluator) with the
+       correct inputs and handling the outputs.
+
+       NOTES:
+           At each stage there is high level error handling that will warn
+           the user but continue to finish its task.
+
+           During variable collection the result from the `get_variables(...)`
+           call may be None, so we filter those results out.
+    '''
     logger = setup_logging(log_level)
 
     # read csv

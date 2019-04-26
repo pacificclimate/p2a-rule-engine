@@ -66,11 +66,14 @@ regions = {
 
 
 def get_region(region_name, url):
-    '''Given a region name, retrieve a csv row from Geoserver for that region
+    '''Given a region name and URL retrieve a csv row from Geoserver
 
        The region_name variable should be a selection from the regions
        dictionary object.  This object contains all the options available in
        Geoserver.
+
+       The URL in the default case is for the Geoserver instance running on
+       docker-dev01.
 
        The return value from this method is a csv row output from
        Geoserver.  The row contains several columns but the ones used are
@@ -98,6 +101,7 @@ def get_region(region_name, url):
 
 
 def pretty_print(rules):
+    '''Display the result of the rule resolver'''
     print('{')
     for rule, result in rules.items():
         print('\t{}: {}'.format(rule, result))
