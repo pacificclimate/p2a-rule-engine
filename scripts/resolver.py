@@ -76,12 +76,14 @@ def resolve_rules(csv, date_range, region, ensemble, connection_string, log_leve
         if var is not None:
             collected_variables[name] = var
 
+    var_count = len(variables)  # count for logger message
     if region_variable:
+        var_count += 1
         collected_variables[region_variable] = int(region['coast_bool'])
 
     logger.info('')
     logger.info('{}/{} variables collected'.format(len(collected_variables),
-                                                   len(variables) + 1))
+                                                   var_count))
 
     # partially define dict accessor to abstract it for the evaluator
     variable_getter = partial(get_dict_val, collected_variables)
