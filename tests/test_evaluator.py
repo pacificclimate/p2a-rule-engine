@@ -2,9 +2,9 @@ import pytest
 from decimal import Decimal
 from functools import partial
 
-from scripts.evaluator import get_symbol_value, cond_operator, \
+from p2a_impacts.evaluator import get_symbol_value, cond_operator, \
     evaluate_rule
-from scripts.fetch_data import get_dict_val
+from p2a_impacts.fetch_data import get_dict_val
 
 
 @pytest.mark.parametrize(

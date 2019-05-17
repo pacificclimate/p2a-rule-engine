@@ -1,7 +1,7 @@
 import pytest
 from decimal import Decimal
 
-from scripts.parser import build_parse_tree
+from p2a_impacts.parser import build_parse_tree
 
 
 @pytest.mark.parametrize(('rule', 'expected_tree', 'expected_vars'), [

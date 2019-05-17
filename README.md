@@ -21,19 +21,20 @@ $python3 -m venv venv
 $source venv/bin/activate
 ```
 
-Install requirements.
+Install requirements and the package.
 ```
 (venv)$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
 (venv)$ export C_INCLUDE_PATH=/usr/include/gdal
 (venv)$ pip install -i https://pypi.pacificclimate.org/simple -r requirements.txt
+(venv)$ pip install .
 ```
 
 To connect to the database the script expects there to be a `.pgpass` file for it to read.
 
 ### Run
-To run the rule engine and view the results use `process.py`.
+To run the rule engine and view the results use `process.py` script.
 ```
-(venv)$ python scripts/process.py --csv rules.csv --date-range [date-option] --region [region-option]
+(venv)$ process.py --csv rules.csv --date-range [date-option] --region [region-option]
 ```
 
 

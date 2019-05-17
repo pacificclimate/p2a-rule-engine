@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.fetch_data import read_csv, filter_by_period, translate_args, \
+from p2a_impacts.fetch_data import read_csv, filter_by_period, translate_args,\
     get_nffd
 
 
