@@ -113,7 +113,8 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--csv', help='CSV file containing rules',
                         required=True)
     parser.add_argument('-d', '--date-range', help='30 year period for data',
-                        required=True)
+                        choices=['2020', '2050', '2080'],
+                        default='2080', required=False)
     parser.add_argument('-r', '--region', help='Selected region',
                         required=True, choices=regions.keys())
     parser.add_argument('-u', '--url', help='Geoserver URL',
