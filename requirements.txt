@@ -3,3 +3,5 @@ GDAL==2.2.0
 numpy==1.16.0
 requests==2.21.0
 sly==0.3
+# From nchelpers
+netCDF4==1.3
