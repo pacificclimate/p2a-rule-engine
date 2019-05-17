@@ -6,7 +6,7 @@ import requests
 from argparse import ArgumentParser
 import csv
 
-from resolver import resolve_rules
+from p2a_impacts.resolver import resolve_rules
 
 
 regions = {

@@ -3,9 +3,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import logging
 
-from parser import build_parse_tree
-from evaluator import evaluate_rule
-from fetch_data import get_dict_val, read_csv, get_variables
+from .parser import build_parse_tree
+from .evaluator import evaluate_rule
+from .fetch_data import get_dict_val, read_csv, get_variables
 
 
 def setup_logging(log_level):
