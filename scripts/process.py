@@ -20,7 +20,7 @@ regions = {
     'central_kootenay': 'Central Kootenay',
     'central_okanagan': 'Central Okanagan',
     'columbia_shuswap': 'Columbia-Shuswap',
-    'comox_valleyecaus': 'Comox Valleyecaus',
+    'comox_valley': 'Comox Valley',
     'cowichan_valley': 'Cowichan Valley',
     'east_kootenay': 'East Kootenay',
     'fraser_fort_george': 'Fraser-Fort George',
