@@ -2,22 +2,23 @@ import pytest
 from decimal import Decimal
 from functools import partial
 
-from scripts.evaluator import get_symbol_value, cond_operator, \
+from p2a_impacts.evaluator import get_symbol_value, cond_operator, \
     evaluate_rule
-from scripts.data_acquisition import get_val_from_dict
+from p2a_impacts.fetch_data import get_dict_val
 
 
-@pytest.mark.parametrize(('symbol', 'rules', 'variable_getter', 'expected'), [
-    ('rule_ten', {'rule_ten': 10}, None, 10),
-    ('temp_djf_iamean_s0p_hist', None,
-     partial(get_val_from_dict, {'temp_djf_iamean_s0p_hist': -10}), -10)
-])
-def test_get_symbol_value(symbol, rules, variable_getter, expected):
-    assert expected == get_symbol_value(symbol, rules, variable_getter)
+@pytest.mark.parametrize(
+    ('symbol', 'rule_getter', 'variable_getter', 'expected'), [
+        ('rule_ten', partial(get_dict_val, {'rule_ten': 10}), None, 10),
+        ('temp_djf_iamean_s0p_hist', None,
+         partial(get_dict_val, {'temp_djf_iamean_s0p_hist': -10}), -10)
+    ])
+def test_get_symbol_value(symbol, rule_getter, variable_getter, expected):
+    assert expected == get_symbol_value(symbol, rule_getter, variable_getter)
 
 
 @pytest.mark.parametrize(('symbol', 'rules', 'variable_getter'), [
-    ('rule_ten', {'rule_nine': 9}, None)
+    ('rule_ten', partial(get_dict_val, {'rule_nine': 9}), None)
 ])
 def test_get_symbol_value_dict_error_handle(symbol, rules, variable_getter):
     with pytest.raises(KeyError):
@@ -35,7 +36,7 @@ def test_cond_operator(cond, t_val, f_val, expected):
 @pytest.mark.parametrize(('rule', 'rules', 'variable_getter', 'expected'), [
     (('>', Decimal(5), Decimal(6)), None, None, False),
     (('+', 'temp_djf_iamean_s100p_hist', Decimal(6)), None,
-     partial(get_val_from_dict, {'temp_djf_iamean_s100p_hist': 20}), 26),
+     partial(get_dict_val, {'temp_djf_iamean_s100p_hist': 20}), 26),
     (('&&', True, False), None, None, False),
     (('&&', ('>', 1, 0), True), None, None, True),
     (('||', True, False), None, None, True),
@@ -46,3 +47,11 @@ def test_cond_operator(cond, t_val, f_val, expected):
 ])
 def test_evaluate_rule(rule, rules, variable_getter, expected):
     assert expected == evaluate_rule(rule, rules, variable_getter)
+
+
+@pytest.mark.parametrize(('rule', 'rules', 'variable_getter'), [
+    (('BAD_EXPR', Decimal(5), Decimal(6)), None, None),
+])
+def test_evaluate_rule_bad_expression(rule, rules, variable_getter):
+    with pytest.raises(NotImplementedError):
+        evaluate_rule(rule, rules, variable_getter)

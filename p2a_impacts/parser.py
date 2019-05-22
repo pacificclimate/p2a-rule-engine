@@ -8,6 +8,7 @@ class RuleLexer(Lexer):
         # tokens
         'RULE',
         'VARIABLE',
+        'REGION',
         'NUMBER',
 
         # special symbols
@@ -22,6 +23,7 @@ class RuleLexer(Lexer):
     literals = {'+', '-', '*', '/', '>', '<', '!', ':', '(', ')'}
 
     # tokens
+    REGION = r'region_oncoast'
     RULE = r'rule_([a-zA-z0-9]+)([^() ])*'
     VARIABLE = r'([a-zA-z]+)([^() ])*'
     NUMBER = r'-?\d+(\.\d+)?'
@@ -49,7 +51,8 @@ class RuleParser(Parser):
     )
 
     def __init__(self):
-        self.vars = set()
+        self.vars = {}
+        self.region_var = None
 
     @_('expr')
     def statement(self, p):
@@ -86,13 +89,30 @@ class RuleParser(Parser):
     def expr(self, p):
         return Decimal(p.NUMBER)
 
+    @_('REGION')
+    def expr(self, p):
+        self.region_var = p.REGION
+        return p.REGION
+
     @_('RULE')
     def expr(self, p):
         return p.RULE
 
     @_('VARIABLE')
     def expr(self, p):
-        self.vars.add(p.VARIABLE)
+        variable, time_of_year, temporal, \
+            spatial, percentile = p.VARIABLE.split('_')
+        variables = {
+            p.VARIABLE: {
+                'variable': variable,
+                'time_of_year': time_of_year,
+                'temporal': temporal,
+                'spatial': spatial,
+                'percentile': percentile
+            }
+        }
+        if p.VARIABLE not in self.vars.keys():
+            self.vars.update(variables)
         return p.VARIABLE
 
     def error(self, p):
@@ -105,4 +125,4 @@ def build_parse_tree(rule):
     parser = RuleParser()
 
     # return parse tree AND all the variables used in the parse tree
-    return parser.parse(lexer.tokenize(rule)), parser.vars
+    return parser.parse(lexer.tokenize(rule)), parser.vars, parser.region_var

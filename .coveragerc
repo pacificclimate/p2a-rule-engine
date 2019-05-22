@@ -1,6 +1,7 @@
 # control coverage.py
 [run]
-    source = scripts
+    source = p2a_impacts
+    omit=p2a_impacts/resolver.py, p2a_impacts/process.py
 
 [report]
-    fail_under = 50
+    fail_under = 75
