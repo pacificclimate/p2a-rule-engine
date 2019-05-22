@@ -48,15 +48,16 @@ def filter_by_period(target, dates, periods):
                 try:
                     return periods[key][target]
                 except KeyError as e:
-                    logger.error('Bad target variable: {} error: {}'
-                                 .format(target, e))
+                    logger.exception('Bad target variable: %s', target)
 
 
-def get_nffd(fd, time, timescale):
+def get_nffd(fd, time, timescale, calendar='standard'):
     """Given the number of frost days and a time period determine the number of
        frost free days.
     """
     # TODO: Implement 360 day calendars
+    if calendar not in ('standard', 'gregorian', '365_day', 'noleap'):
+        raise NotImplementedError('Calendar %s not yet implemented', calendar)
     if timescale == 'yearly':
         return 365 - fd
     elif timescale == 'seasonal':
