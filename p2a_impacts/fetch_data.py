@@ -96,6 +96,7 @@ def calculate_result(vals_to_calc, variables, time, timescale):
 
 def query_backend(sesh, model, query_args):
     """Return the desired variable for a particular climate model"""
+    logger.debug('Running query_backend() with args: %s, %s', model, query_args)
     return [
         filter_by_period(
             query_args['spatial'],
