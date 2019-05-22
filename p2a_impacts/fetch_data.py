@@ -129,17 +129,22 @@ def get_models(sesh, hist_var, ensemble):
         return all_models
 
 
-def translate_variable(variable):
-    '''Given a variable component, translate it to the CE equivalent'''
-    variables = {
+def translate_names(table):
+    def do_the_translation(key):
+        return table[key]
+    return do_the_translation
+
+
+
+translate_variable = translate_names({
         'temp': ['tasmin', 'tasmax'],
         'prec': ['pr'],
         'dg05': ['gdd'],
         'nffd': ['fdETCCDI'],
         'pass': ['prsn'],
         'dl18': ['hdd']
-    }
-    return variables[variable]
+})
+'''Given a variable component, translate it to the CE equivalent'''
 
 
 def translate_time(time_of_year):
@@ -176,33 +181,27 @@ def translate_timescale(time_of_year):
     return next(timescale for period, timescale in timescales.items() if time_of_year in period)
 
 
-def translate_temporal(temporal):
-    '''Given a temporal component, translate it to the CE equivalent'''
-    cell_methods = {
-        'iastddev': 'standard_deviation',
-        'iamean': 'mean'
-    }
-    return cell_methods[temporal]
+translate_temporal = translate_names({
+    'iastddev': 'standard_deviation',
+    'iamean': 'mean'
+})
+'''Given a temporal component, translate it to the CE equivalent'''
 
 
-def translate_spatial(spatial):
-    '''Given a spatial component, translate it to the CE equivalent'''
-    spatial_options = {
-        's0p': 'min',
-        's100p': 'max',
-        'smean': 'mean'
-    }
-    return spatial_options[spatial]
+translate_spatial = translate_names({
+    's0p': 'min',
+    's100p': 'max',
+    'smean': 'mean'
+})
+'''Given a spatial component, translate it to the CE equivalent'''
 
 
-def translate_percentile(percentile):
-    '''Given a percentile component, translate it to the CE equivalent'''
-    percentiles = {
+translate_percentile = translate_names({
         'e25p': 25,
         'e75p': 75,
         'hist': 100
-    }
-    return percentiles[percentile]
+})
+'''Given a percentile component, translate it to the CE equivalent'''
 
 
 def translate_emission(percentile, variable):
