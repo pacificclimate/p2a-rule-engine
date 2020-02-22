@@ -16,7 +16,7 @@ setup(name='p2a_impacts',
       license='GPLv3',
       packages=['p2a_impacts'],
       zip_safe=True,
-      scripts=['scripts/process.py'],
+      scripts=['scripts/process.py', 'scripts/preprocess_all.py'],
       classifiers=[
           'Development Status :: 3 - Alpha',
           'Environment :: Console',

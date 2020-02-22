@@ -55,7 +55,9 @@ regions = {
     'sub_boreal_mountains': 'Sub Boreal Mountains',
     'taiga_plains': 'Taiga Plains',
     'cariboo': 'Cariboo',
-    'kootenay_/_boundary': 'Kootenay / Boundary',
+    # Apparently this is a forestry region which is *different* than
+    # "Kootenay Boundary" regional district
+    'kootenay__boundary': 'Kootenay / Boundary',
     'northeast': 'Northeast',
     'omineca': 'Omineca',
     'skeena': 'Skeena',
