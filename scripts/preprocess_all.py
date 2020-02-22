@@ -25,6 +25,7 @@ source env/bin/activate
 
 git clone https://github.com/pacificclimate/p2a-rule-engine
 pushd p2a-rule-engine
+git checkout feature/preprocess
 pip install -U pip && pip install -i https://pypi.pacificclimate.org/simple .
 pip install -U "netcdf4<1.4"
 
