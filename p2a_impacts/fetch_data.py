@@ -110,7 +110,10 @@ def query_backend(sesh, model, query_args):
                 area=query_args['area'],
                 variable=var,
                 timescale=query_args['timescale'],
-                cell_method=query_args['cell_method']
+                cell_method=query_args['cell_method'],
+                mean='',
+                max='',
+                min='',
             )
         )
         for var in query_args['variable']

@@ -1,4 +1,6 @@
-ce==1.1.1
+sphinx
+contexttimer
+-e git+git://github.com/pacificclimate/climate-explorer-backend@specify-stats#egg=ce
 GDAL==2.2.0
 numpy==1.16.0
 requests==2.21.0
