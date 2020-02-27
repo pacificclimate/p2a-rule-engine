@@ -42,13 +42,20 @@ def filter_by_period(target, dates, periods):
 
        The target is data we are interested in (mean, max, min, etc...)
     """
+    # TODO: This assumes that exactly one file id matches a date. Could there
+    #   be more than one match?
     for key in periods.keys():
+        # key: file id
         for date in dates:
+            # date: date component of file id, e.g., '20100101-20391231'
             if date in key:
                 try:
                     return periods[key][target]
                 except KeyError as e:
                     logger.exception('Bad target variable: %s', target)
+
+    # No match
+    return None
 
 
 def get_nffd(fd, time, timescale, calendar='standard'):
@@ -82,14 +89,20 @@ def calculate_result(vals_to_calc, variables, time, timescale):
         except TypeError as e:
             logger.error('Unable to get mean of {} in model: {} error: {}'
                          .format(vals_to_calc, model, e))
+#   TODO: `model` is undefined
 
     val_to_calc, = vals_to_calc
+    # TODO: This computation is not very robust. `variables` in principle can
+    #  contain any list of variable names, and appears in practice to hold
+    #  exactly one or two. The computation is always performed on the first of
+    #  the values. A more robust condition would be `['fdETCCDI'] == variables`,
+    #  I think.
     if 'fdETCCDI' in variables:
         try:
             return get_nffd(val_to_calc, time, timescale)
         except TypeError as e:
             logger.error('Unable to compute nffd from fd with {} error: {}'
-                         .format((val_to_calcc, time, timescale), e))
+                         .format((val_to_calc, time, timescale), e))
     else:
         return val_to_calc
 
