@@ -2,9 +2,12 @@
 The purpose of this script is to run the rule resolver with some parameters
 that could be expected from the p2a front end.
 '''
-import requests
+import sys
 from argparse import ArgumentParser
 import csv
+import json
+
+import requests
 
 from p2a_impacts.resolver import resolve_rules
 
@@ -100,14 +103,6 @@ def get_region(region_name, url):
             return row
 
 
-def pretty_print(rules):
-    '''Display the result of the rule resolver'''
-    print('{')
-    for rule, result in rules.items():
-        print('\t{}: {}'.format(rule, result))
-    print('}')
-
-
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-c', '--csv', help='CSV file containing rules',
@@ -137,4 +132,4 @@ if __name__ == '__main__':
 
     rules = resolve_rules(args.csv, args.date_range, region, args.ensemble,
                           args.connection_string, args.log_level)
-    pretty_print(rules)
+    json.dump(rules, sys.stdout)
