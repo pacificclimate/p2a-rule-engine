@@ -106,7 +106,7 @@ def query_backend(sesh, model, query_args):
                 ensemble_name=query_args['ensemble_name'],
                 model=model,
                 emission=query_args['emission'],
-                time=query_args['time'],
+                time=str(query_args['time']),
                 area=query_args['area'],
                 variable=var,
                 timescale=query_args['timescale'],

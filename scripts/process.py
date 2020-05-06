@@ -132,4 +132,6 @@ if __name__ == '__main__':
 
     rules = resolve_rules(args.csv, args.date_range, region, args.ensemble,
                           args.connection_string, args.log_level)
+    rules["rule_shm"] = float(rules["rule_shm"])
+    rules["rule_6j-i-land"] = float(rules["rule_6j-i-land"])
     json.dump(rules, sys.stdout)
