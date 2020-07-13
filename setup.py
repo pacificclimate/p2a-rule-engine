@@ -7,8 +7,8 @@ setup(name='p2a_impacts',
       author='Nikola Rados',
       author_email='nrados@uvic.ca',
       install_requires=[
-          'ce>=1.1',
-          'GDAL==2.2',
+          'ce>=3.0.0',
+          'GDAL',
           'numpy>=1.16',
           'requests',
           'sly'
