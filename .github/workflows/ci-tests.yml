@@ -6,9 +6,11 @@ jobs:
   build:
 
     runs-on: ubuntu-18.04
+    container: pcic/geospatial-python:gdal3
+
     strategy:
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: [3.8]
     env:
       PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
 
