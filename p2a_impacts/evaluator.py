@@ -3,17 +3,17 @@ from decimal import Decimal
 import logging
 
 
-logger = logging.getLogger('scripts')
+logger = logging.getLogger("scripts")
 operands = {
-    '+': operator.add,
-    '-': operator.sub,
-    '*': operator.mul,
-    '/': operator.truediv,
-    '>': operator.gt,
-    '>=': operator.ge,
-    '<': operator.lt,
-    '<=': operator.le,
-    '==': operator.eq
+    "+": operator.add,
+    "-": operator.sub,
+    "*": operator.mul,
+    "/": operator.truediv,
+    ">": operator.gt,
+    ">=": operator.ge,
+    "<": operator.lt,
+    "<=": operator.le,
+    "==": operator.eq,
 }
 
 
@@ -22,7 +22,7 @@ def get_symbol_value(symbol, rule_getter, variable_getter):
        the parse tree for that symbol if it is a rule either the value of that
        symbol if it is a variable.
     """
-    if 'rule_' in symbol:
+    if "rule_" in symbol:
         return rule_getter(symbol)
     else:
         return variable_getter(symbol)
@@ -42,6 +42,7 @@ def evaluate_rule(rule, rule_getter, variable_getter):
     """This method uses a helper method to recursively compute the value of the
        rule expression.
     """
+
     def evaluate_expression(expression):
         """Evaluate the given expression."""
         # base case
@@ -54,26 +55,31 @@ def evaluate_rule(rule, rule_getter, variable_getter):
         operand = expression[0]
 
         if operand in operands:
-            return operands[operand](evaluate_expression(expression[1]),
-                                     evaluate_expression(expression[2]))
-        elif operand == '&&':
-            return evaluate_expression(expression[1]) and \
-                   evaluate_expression(expression[2])
-        elif operand == '||':
-            return evaluate_expression(expression[1]) or \
-                   evaluate_expression(expression[2])
-        elif operand == '!':
+            return operands[operand](
+                evaluate_expression(expression[1]), evaluate_expression(expression[2])
+            )
+        elif operand == "&&":
+            return evaluate_expression(expression[1]) and evaluate_expression(
+                expression[2]
+            )
+        elif operand == "||":
+            return evaluate_expression(expression[1]) or evaluate_expression(
+                expression[2]
+            )
+        elif operand == "!":
             return not evaluate_expression(expression[1])
-        elif operand == '?':
-            return cond_operator(evaluate_expression(expression[1]),
-                                 evaluate_expression(expression[2]),
-                                 evaluate_expression(expression[3]))
+        elif operand == "?":
+            return cond_operator(
+                evaluate_expression(expression[1]),
+                evaluate_expression(expression[2]),
+                evaluate_expression(expression[3]),
+            )
         elif isinstance(expression, str):
-            return evaluate_expression(get_symbol_value(expression,
-                                                        rule_getter,
-                                                        variable_getter))
+            return evaluate_expression(
+                get_symbol_value(expression, rule_getter, variable_getter)
+            )
         else:
-            logger.error('Unable to process expression {}'.format(expression))
+            logger.error("Unable to process expression {}".format(expression))
             raise NotImplementedError
 
     return evaluate_expression(rule)

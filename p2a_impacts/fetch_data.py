@@ -7,7 +7,7 @@ from ce.api.models import models
 from ce.api.multistats import multistats
 
 
-logger = logging.getLogger('scripts')
+logger = logging.getLogger("scripts")
 
 
 def get_dict_val(dict, val):
@@ -20,10 +20,12 @@ def read_csv(filename):
        and return those columns applying a 'rule_' prefix to the id column.
     """
     rules = {}
-    with open(filename, 'r') as f:
-        csv_reader = list(csv.DictReader(f, delimiter=';'))
-        rules = {'rule_{}'.format(list(row.values())[0]): list(row.values())[1]
-                 for row in csv_reader}
+    with open(filename, "r") as f:
+        csv_reader = list(csv.DictReader(f, delimiter=";"))
+        rules = {
+            "rule_{}".format(list(row.values())[0]): list(row.values())[1]
+            for row in csv_reader
+        }
 
     return rules
 
@@ -48,19 +50,19 @@ def filter_by_period(target, dates, periods):
                 try:
                     return periods[key][target]
                 except KeyError as e:
-                    logger.exception('Bad target variable: %s', target)
+                    logger.exception("Bad target variable: %s", target)
 
 
-def get_nffd(fd, time, timescale, calendar='standard'):
+def get_nffd(fd, time, timescale, calendar="standard"):
     """Given the number of frost days and a time period determine the number of
        frost free days.
     """
     # TODO: Implement 360 day calendars
-    if calendar not in ('standard', 'gregorian', '365_day', 'noleap'):
-        raise NotImplementedError('Calendar %s not yet implemented', calendar)
-    if timescale == 'yearly':
+    if calendar not in ("standard", "gregorian", "365_day", "noleap"):
+        raise NotImplementedError("Calendar %s not yet implemented", calendar)
+    if timescale == "yearly":
         return 365 - fd
-    elif timescale == 'seasonal':
+    elif timescale == "seasonal":
         if time == 0:
             return 89 - fd
         elif time == 1 or time == 2:
@@ -70,57 +72,63 @@ def get_nffd(fd, time, timescale, calendar='standard'):
 
 
 def calculate_result(vals_to_calc, variables, time, timescale):
-    '''Given some query results determine which calculation is required
+    """Given some query results determine which calculation is required
 
        There are some cases where the database data does not give us exactly
        what we need.  Here we check for those cases and ensure that the output
        is what the rules require.
-    '''
-    if {'tasmin', 'tasmax'}.issubset(variables):
+    """
+    if {"tasmin", "tasmax"}.issubset(variables):
         try:
             return mean(vals_to_calc)
         except TypeError as e:
-            logger.error('Unable to get mean of {} in model: {} error: {}'
-                         .format(vals_to_calc, model, e))
+            logger.error(
+                "Unable to get mean of {} in model: {} error: {}".format(
+                    vals_to_calc, model, e
+                )
+            )
 
-    val_to_calc, = vals_to_calc
-    if 'fdETCCDI' in variables:
+    (val_to_calc,) = vals_to_calc
+    if "fdETCCDI" in variables:
         try:
             return get_nffd(val_to_calc, time, timescale)
         except TypeError as e:
-            logger.error('Unable to compute nffd from fd with {} error: {}'
-                         .format((val_to_calcc, time, timescale), e))
+            logger.error(
+                "Unable to compute nffd from fd with {} error: {}".format(
+                    (val_to_calcc, time, timescale), e
+                )
+            )
     else:
         return val_to_calc
 
 
 def query_backend(sesh, model, query_args):
     """Return the desired variable for a particular climate model"""
-    logger.debug('Running query_backend() with args: %s, %s', model, query_args)
+    logger.debug("Running query_backend() with args: %s, %s", model, query_args)
     return [
         filter_by_period(
-            query_args['spatial'],
-            query_args['dates'],
+            query_args["spatial"],
+            query_args["dates"],
             multistats(
                 sesh,
-                ensemble_name=query_args['ensemble_name'],
+                ensemble_name=query_args["ensemble_name"],
                 model=model,
-                emission=query_args['emission'],
-                time=query_args['time'],
-                area=query_args['area'],
+                emission=query_args["emission"],
+                time=query_args["time"],
+                area=query_args["area"],
                 variable=var,
-                timescale=query_args['timescale'],
-                cell_method=query_args['cell_method']
-            )
+                timescale=query_args["timescale"],
+                cell_method=query_args["cell_method"],
+            ),
         )
-        for var in query_args['variable']
+        for var in query_args["variable"]
     ]
 
 
 def get_models(sesh, hist_var, ensemble):
     """Return a list of models needed to compute the percentile"""
-    historical_baseline = 'anusplin'
-    if hist_var == 'hist':
+    historical_baseline = "anusplin"
+    if hist_var == "hist":
         return [historical_baseline]
     else:
         # return all models EXCEPT for the historical baseline
@@ -132,89 +140,96 @@ def get_models(sesh, hist_var, ensemble):
 def translate_names(table):
     def do_the_translation(key):
         return table[key]
+
     return do_the_translation
 
 
-
-translate_variable = translate_names({
-        'temp': ['tasmin', 'tasmax'],
-        'prec': ['pr'],
-        'dg05': ['gdd'],
-        'nffd': ['fdETCCDI'],
-        'pass': ['prsn'],
-        'dl18': ['hdd']
-})
-'''Given a variable component, translate it to the CE equivalent'''
+translate_variable = translate_names(
+    {
+        "temp": ["tasmin", "tasmax"],
+        "prec": ["pr"],
+        "dg05": ["gdd"],
+        "nffd": ["fdETCCDI"],
+        "pass": ["prsn"],
+        "dl18": ["hdd"],
+    }
+)
+"""Given a variable component, translate it to the CE equivalent"""
 
 
 def translate_time(time_of_year):
-    '''Given a time of year component, translate it to the CE equivalent
+    """Given a time of year component, translate it to the CE equivalent
        time.
-    '''
+    """
     times = {
-        ('ann', 'djf', 'jan'): 0,
-        ('mam', 'feb'): 1,
-        ('jja', 'mar'): 2,
-        ('son', 'apr'): 3,
-        ('may'): 4,
-        ('jun'): 5,
-        ('jul'): 6,
-        ('aug'): 7,
-        ('sep'): 8,
-        ('oct'): 9,
-        ('nov'): 10,
-        ('dec'): 11
+        ("ann", "djf", "jan"): 0,
+        ("mam", "feb"): 1,
+        ("jja", "mar"): 2,
+        ("son", "apr"): 3,
+        ("may"): 4,
+        ("jun"): 5,
+        ("jul"): 6,
+        ("aug"): 7,
+        ("sep"): 8,
+        ("oct"): 9,
+        ("nov"): 10,
+        ("dec"): 11,
     }
     return next(time for period, time in times.items() if time_of_year in period)
 
 
 def translate_timescale(time_of_year):
-    '''Given a time of year component, translate it to the CE equivalent
+    """Given a time of year component, translate it to the CE equivalent
        timescale.
-    '''
+    """
     timescales = {
-        ('ann'): 'yearly',
-        ('djf', 'mam', 'jja', 'son'): 'seasonal',
-        ('jan', 'feb', 'mar', 'apr', 'may', 'jun',
-         'jul', 'aug', 'sep', 'oct', 'nov', 'dec'): 'monthly',
+        ("ann"): "yearly",
+        ("djf", "mam", "jja", "son"): "seasonal",
+        (
+            "jan",
+            "feb",
+            "mar",
+            "apr",
+            "may",
+            "jun",
+            "jul",
+            "aug",
+            "sep",
+            "oct",
+            "nov",
+            "dec",
+        ): "monthly",
     }
-    return next(timescale for period, timescale in timescales.items() if time_of_year in period)
+    return next(
+        timescale for period, timescale in timescales.items() if time_of_year in period
+    )
 
 
-translate_temporal = translate_names({
-    'iastddev': 'standard_deviation',
-    'iamean': 'mean'
-})
-'''Given a temporal component, translate it to the CE equivalent'''
+translate_temporal = translate_names(
+    {"iastddev": "standard_deviation", "iamean": "mean"}
+)
+"""Given a temporal component, translate it to the CE equivalent"""
 
 
-translate_spatial = translate_names({
-    's0p': 'min',
-    's100p': 'max',
-    'smean': 'mean'
-})
-'''Given a spatial component, translate it to the CE equivalent'''
+translate_spatial = translate_names({"s0p": "min", "s100p": "max", "smean": "mean"})
+"""Given a spatial component, translate it to the CE equivalent"""
 
 
-translate_percentile = translate_names({
-        'e25p': 25,
-        'e75p': 75,
-        'hist': 100
-})
-'''Given a percentile component, translate it to the CE equivalent'''
+translate_percentile = translate_names({"e25p": 25, "e75p": 75, "hist": 100})
+"""Given a percentile component, translate it to the CE equivalent"""
 
 
 def translate_emission(percentile, variable):
-    '''Given emission and variable components, translate them into the CE
+    """Given emission and variable components, translate them into the CE
        equivalent emission.
-    '''
+    """
     emissions = {
-        ('temp', 'prec', 'dg05', 'pass', 'dl18'): 'historical,rcp85',
-        ('nffd'): 'historical, rcp85',
-        ('hist'): ''  # historical has no emission scenario
+        ("temp", "prec", "dg05", "pass", "dl18"): "historical,rcp85",
+        ("nffd"): "historical, rcp85",
+        ("hist"): "",  # historical has no emission scenario
     }
 
-    if percentile == 'hist':
+    if percentile == "hist":
         emission = percentile
     else:
         emission = variable
@@ -223,23 +238,17 @@ def translate_emission(percentile, variable):
 
 
 def translate_date(percentile, date_range):
-    '''Given percentile and date range components, translate them into the CE
+    """Given percentile and date range components, translate them into the CE
        equivalent dates.
-    '''
+    """
     dates = {
-        'hist': ['19710101-20001231'],
-        '2020': ['20100101-20391231',
-                 '20110101-20400101',
-                 '20100101-20391230'],
-        '2050': ['20400101-20691231',
-                 '20410101-20700101',
-                 '20400101-20691230'],
-        '2080': ['20700101-20991231',
-                 '20710101-21000101',
-                 '20700101-20991230']
+        "hist": ["19710101-20001231"],
+        "2020": ["20100101-20391231", "20110101-20400101", "20100101-20391230"],
+        "2050": ["20400101-20691231", "20410101-20700101", "20400101-20691230"],
+        "2080": ["20700101-20991231", "20710101-21000101", "20700101-20991230"],
     }
 
-    if percentile == 'hist':
+    if percentile == "hist":
         period = percentile
     else:
         period = date_range
@@ -247,22 +256,23 @@ def translate_date(percentile, date_range):
     return dates[period]
 
 
-def translate_args(variable, time_of_year, temporal, spatial, percentile, area,
-                   date_range, ensemble):
+def translate_args(
+    variable, time_of_year, temporal, spatial, percentile, area, date_range, ensemble
+):
     """Given a set of arguments return a dictionary containing their CE
        counterparts
     """
     return {
-        'variable': translate_variable(variable),
-        'time': translate_time(time_of_year),
-        'timescale': translate_timescale(time_of_year),
-        'cell_method': translate_temporal(temporal),
-        'spatial': translate_spatial(spatial),
-        'percentile': translate_percentile(percentile),
-        'emission': translate_emission(percentile, variable),
-        'area': area['the_geom'],
-        'dates': translate_date(percentile, date_range),
-        'ensemble_name': ensemble
+        "variable": translate_variable(variable),
+        "time": translate_time(time_of_year),
+        "timescale": translate_timescale(time_of_year),
+        "cell_method": translate_temporal(temporal),
+        "spatial": translate_spatial(spatial),
+        "percentile": translate_percentile(percentile),
+        "emission": translate_emission(percentile, variable),
+        "area": area["the_geom"],
+        "dates": translate_date(percentile, date_range),
+        "ensemble_name": ensemble,
     }
 
 
@@ -273,34 +283,47 @@ def get_variables(sesh, variables, ensemble, date_range, area):
       This is to handle the case where the database does not contain to data
       the query is searching for.
     """
-    logger.info('')
-    logger.info('Translating variables for query')
+    logger.info("")
+    logger.info("Translating variables for query")
     query_args = translate_args(
-        variables['variable'], variables['time_of_year'], variables['temporal'],
-        variables['spatial'], variables['percentile'], area, date_range,
-        ensemble
+        variables["variable"],
+        variables["time_of_year"],
+        variables["temporal"],
+        variables["spatial"],
+        variables["percentile"],
+        area,
+        date_range,
+        ensemble,
     )
 
-    logger.info('Collecting models')
-    models = get_models(sesh, variables['percentile'], ensemble)
+    logger.info("Collecting models")
+    models = get_models(sesh, variables["percentile"], ensemble)
 
-    var_name = '_'.join([variables['variable'], variables['time_of_year'],
-                         variables['temporal'], variables['spatial'],
-                         variables['percentile']])
+    var_name = "_".join(
+        [
+            variables["variable"],
+            variables["time_of_year"],
+            variables["temporal"],
+            variables["spatial"],
+            variables["percentile"],
+        ]
+    )
 
-    logger.info('Fetching data for {}'.format(var_name))
+    logger.info("Fetching data for {}".format(var_name))
 
     results = [
-        calculate_result(query_data, query_args['variable'], query_args['time'],
-                         query_args['timescale'])
-        for query_data in [
-            query_backend(sesh, model, query_args) for model in models
-        ]
+        calculate_result(
+            query_data,
+            query_args["variable"],
+            query_args["time"],
+            query_args["timescale"],
+        )
+        for query_data in [query_backend(sesh, model, query_args) for model in models]
         if not query_data.count(None)
     ]
 
     if not results:
-        logger.warning('Unable to get data for {}'.format(var_name))
+        logger.warning("Unable to get data for {}".format(var_name))
         return None
     else:
-        return np.percentile(results, query_args['percentile'])
+        return np.percentile(results, query_args["percentile"])
