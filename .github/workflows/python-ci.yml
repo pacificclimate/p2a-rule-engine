@@ -29,8 +29,11 @@ jobs:
     - name: Test with pytest (full)
       if: github.ref == 'refs/heads/master'
       run: |
-        py.test tests/ --cov --flake8 --cov-report term-missing
+        py.test tests/ --cov --cov-report term-missing
     - name: Test with pytest (fast)
       if: github.ref != 'refs/heads/master'
       run: |
-        py.test -m "not slow" --flake8
+        py.test -m "not slow"
+    - name: Code format check
+      run: |
+        black . --check
