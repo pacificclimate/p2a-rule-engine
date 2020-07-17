@@ -63,7 +63,7 @@ pytest tests/ --cov --flake8 --cov-report term-missing
 
 ### Releasing
 
-1. Increment `version` in `setup.py`
+1. Increment `__version__` in `setup.py`
 2. Summarize release changes in `NEWS.md`
 3. Commit these changes, then tag the release
 ```bash

@@ -1,8 +1,10 @@
 from setuptools import setup
 
+__version__ = (0, 1, 0)
+
 setup(
     name="p2a_impacts",
-    version="0.0.1",
+    version='.'.join(str(d) for d in __version__),
     description="Climate impacts engine for Plan2Adapt.ca",
     url="https://pland2adapt.ca",
     author="Nikola Rados",
