@@ -1,5 +1,5 @@
 ce==1.1.1
-GDAL==2.2.0
+GDAL==2.2.3
 numpy==1.16.0
 requests==2.21.0
 sly==0.3
