@@ -61,6 +61,20 @@ Uses [pytest](https://github.com/pytest-dev/pytest).
 pytest tests/ --cov --flake8 --cov-report term-missing
 ```
 
+### Releasing
+
+1. Increment `version` in `setup.py`
+2. Summarize release changes in `NEWS.md`
+3. Commit these changes, then tag the release
+```bash
+git add setup.py NEWS.md
+git commit -m"Bump to version x.x.x"
+git tag -a -m"x.x.x" x.x.x
+git push --follow-tags
+```
+4. Our Github Actions [workflow](https://github.com/pacificclimate/p2a-rule-engine/blob/master/.github/workflows/pypi-publish.yml) will build and release the package
+
+
 ### Troubleshooting
 #### Unhashable type: 'MaskedArray' error
 Solution for this [issue](https://github.com/pacificclimate/climate-explorer-backend/issues/97) is ongoing.  A temporary solution is to replace some code in the virtual environment.
