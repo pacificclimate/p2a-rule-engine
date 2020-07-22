@@ -21,7 +21,7 @@ if __name__ == "__main__":
         default="2080",
     )
     parser.add_argument(
-        "-r", "--region", help="Selected region", default='bc', choices=REGIONS.keys()
+        "-r", "--region", help="Selected region", default="bc", choices=REGIONS.keys()
     )
     parser.add_argument(
         "-u",
