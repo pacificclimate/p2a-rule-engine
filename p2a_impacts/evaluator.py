@@ -19,8 +19,8 @@ operands = {
 
 def get_symbol_value(symbol, rule_getter, variable_getter):
     """Given the name of a terminal symbol in an rule expression, return either
-       the parse tree for that symbol if it is a rule either the value of that
-       symbol if it is a variable.
+    the parse tree for that symbol if it is a rule either the value of that
+    symbol if it is a variable.
     """
     if "rule_" in symbol:
         return rule_getter(symbol)
@@ -30,7 +30,7 @@ def get_symbol_value(symbol, rule_getter, variable_getter):
 
 def cond_operator(cond, t_val, f_val):
     """Mimic the functionality of the conditional operator
-       'cond ? t_val : f_val'
+    'cond ? t_val : f_val'
     """
     if cond:
         return t_val
@@ -40,7 +40,7 @@ def cond_operator(cond, t_val, f_val):
 
 def evaluate_rule(rule, rule_getter, variable_getter):
     """This method uses a helper method to recursively compute the value of the
-       rule expression.
+    rule expression.
     """
 
     def evaluate_expression(expression):

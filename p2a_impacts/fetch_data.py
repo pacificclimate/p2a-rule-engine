@@ -17,7 +17,7 @@ def get_dict_val(dict, val):
 
 def read_csv(filename):
     """Read a csv file which contains at least the id and condition columns
-       and return those columns applying a 'rule_' prefix to the id column.
+    and return those columns applying a 'rule_' prefix to the id column.
     """
     rules = {}
     with open(filename, "r") as f:
@@ -32,17 +32,17 @@ def read_csv(filename):
 
 def filter_by_period(target, dates, periods):
     """Search through dictionary containing data for different 30 year periods,
-       find the desired period and return the target variable.
+    find the desired period and return the target variable.
 
-       Periods is the result of the call to multistats. It is a dictionary
-       containing file ids as keys and values that are dictionaries as well.
-       The purpose of this method is to match the date substring in the file id
-       with the dates parameter and return the target value.
+    Periods is the result of the call to multistats. It is a dictionary
+    containing file ids as keys and values that are dictionaries as well.
+    The purpose of this method is to match the date substring in the file id
+    with the dates parameter and return the target value.
 
-       The dates parameter is a list of all the known dates found in the ids
-       for each 30 year period.
+    The dates parameter is a list of all the known dates found in the ids
+    for each 30 year period.
 
-       The target is data we are interested in (mean, max, min, etc...)
+    The target is data we are interested in (mean, max, min, etc...)
     """
     for key in periods.keys():
         for date in dates:
@@ -55,7 +55,7 @@ def filter_by_period(target, dates, periods):
 
 def get_nffd(fd, time, timescale, calendar="standard"):
     """Given the number of frost days and a time period determine the number of
-       frost free days.
+    frost free days.
     """
     # TODO: Implement 360 day calendars
     if calendar not in ("standard", "gregorian", "365_day", "noleap"):
@@ -74,9 +74,9 @@ def get_nffd(fd, time, timescale, calendar="standard"):
 def calculate_result(vals_to_calc, variables, time, timescale):
     """Given some query results determine which calculation is required
 
-       There are some cases where the database data does not give us exactly
-       what we need.  Here we check for those cases and ensure that the output
-       is what the rules require.
+    There are some cases where the database data does not give us exactly
+    what we need.  Here we check for those cases and ensure that the output
+    is what the rules require.
     """
     if {"tasmin", "tasmax"}.issubset(variables):
         try:
@@ -159,7 +159,7 @@ translate_variable = translate_names(
 
 def translate_time(time_of_year):
     """Given a time of year component, translate it to the CE equivalent
-       time.
+    time.
     """
     times = {
         ("ann", "djf", "jan"): 0,
@@ -180,7 +180,7 @@ def translate_time(time_of_year):
 
 def translate_timescale(time_of_year):
     """Given a time of year component, translate it to the CE equivalent
-       timescale.
+    timescale.
     """
     timescales = {
         ("ann"): "yearly",
@@ -221,7 +221,7 @@ translate_percentile = translate_names({"e25p": 25, "e75p": 75, "hist": 100})
 
 def translate_emission(percentile, variable):
     """Given emission and variable components, translate them into the CE
-       equivalent emission.
+    equivalent emission.
     """
     emissions = {
         ("temp", "prec", "dg05", "pass", "dl18"): "historical,rcp85",
@@ -239,7 +239,7 @@ def translate_emission(percentile, variable):
 
 def translate_date(percentile, date_range):
     """Given percentile and date range components, translate them into the CE
-       equivalent dates.
+    equivalent dates.
     """
     dates = {
         "hist": ["19710101-20001231"],
@@ -260,7 +260,7 @@ def translate_args(
     variable, time_of_year, temporal, spatial, percentile, area, date_range, ensemble
 ):
     """Given a set of arguments return a dictionary containing their CE
-       counterparts
+    counterparts
     """
     return {
         "variable": translate_variable(variable),
@@ -279,9 +279,9 @@ def translate_args(
 def get_variables(sesh, variables, ensemble, date_range, area):
     """Given a variable name return the value by querying the CE backend
 
-      The return value from this method will either be a single value or None.
-      This is to handle the case where the database does not contain to data
-      the query is searching for.
+    The return value from this method will either be a single value or None.
+    This is to handle the case where the database does not contain to data
+    the query is searching for.
     """
     logger.info("")
     logger.info("Translating variables for query")
