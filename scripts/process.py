@@ -33,7 +33,7 @@ if __name__ == "__main__":
         "-x",
         "--connection-string",
         help="Database connection string",
-        default="postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta",
+        default="postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta_12f290b63791",
     )
     parser.add_argument(
         "-e",
