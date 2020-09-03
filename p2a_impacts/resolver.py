@@ -25,16 +25,16 @@ def resolve_rules(
 ):
     """Given a range of parameters run the rule engine
 
-       This script controls the flow of the rule engine.  It is responsible for
-       calling each of the components (parser, data fetch, evaluator) with the
-       correct inputs and handling the outputs.
+    This script controls the flow of the rule engine.  It is responsible for
+    calling each of the components (parser, data fetch, evaluator) with the
+    correct inputs and handling the outputs.
 
-       NOTES:
-           At each stage there is high level error handling that will warn
-           the user but continue to finish its task.
+    NOTES:
+        At each stage there is high level error handling that will warn
+        the user but continue to finish its task.
 
-           During variable collection the result from the `get_variables(...)`
-           call may be None, so we filter those results out.
+        During variable collection the result from the `get_variables(...)`
+        call may be None, so we filter those results out.
     """
     logger = setup_logging(log_level)
 

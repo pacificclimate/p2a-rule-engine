@@ -61,17 +61,17 @@ REGIONS = {
 def get_region(region_name, url):
     """Given a region name and URL retrieve a csv row from Geoserver
 
-       The region_name variable should be a selection from the REGIONS
-       dictionary object.  This object contains all the options available in
-       Geoserver.
+    The region_name variable should be a selection from the REGIONS
+    dictionary object.  This object contains all the options available in
+    Geoserver.
 
-       The URL in the default case is for the Geoserver instance running on
-       docker-dev01.
+    The URL in the default case is for the Geoserver instance running on
+    docker-dev01.
 
-       The return value from this method is a csv row output from
-       Geoserver.  The row contains several columns but the ones used are
-       coast_bool and WKT.  These contain whether or not the region is coastal
-       and the polygon describing the region respectively.
+    The return value from this method is a csv row output from
+    Geoserver.  The row contains several columns but the ones used are
+    coast_bool and WKT.  These contain whether or not the region is coastal
+    and the polygon describing the region respectively.
     """
     params = {
         "service": "WFS",
