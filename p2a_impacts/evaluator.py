@@ -1,5 +1,4 @@
 import operator
-from decimal import Decimal
 import logging
 
 
@@ -47,9 +46,7 @@ def evaluate_rule(rule, rule_getter, variable_getter):
         """Evaluate the given expression."""
         # base case
         if isinstance(expression, float) or isinstance(expression, int):
-            return Decimal(expression)
-        elif isinstance(expression, Decimal):
-            return expression
+            return float(expression)
 
         # check operation
         operand = expression[0]
