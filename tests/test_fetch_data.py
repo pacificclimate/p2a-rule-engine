@@ -14,6 +14,7 @@ from p2a_impacts.fetch_data import read_csv, filter_by_period, translate_args, g
                 "rule_future-snow",
                 "rule_future-hybrid",
                 "rule_future-rain",
+                "rule_shm",
             ],
             [
                 "(temp_djf_iamean_s0p_hist <= -6)",
@@ -32,6 +33,7 @@ from p2a_impacts.fetch_data import read_csv, filter_by_period, translate_args, g
                 "temp_djf_iamean_s0p_e75p >= -6) && (temp_djf_iamean_s100p_hist + "
                 "temp_djf_iamean_s100p_e25p <= 5))",
                 "(temp_djf_iamean_s100p_hist + " "temp_djf_iamean_s100p_e75p >= 5)",
+                "(temp_jul_iamean_smean_hist / ((prec_jja_iamean_smean_hist / 1000) * 92))",
             ],
         )
     ],

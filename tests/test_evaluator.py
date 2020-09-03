@@ -41,12 +41,12 @@ def test_cond_operator(cond, t_val, f_val, expected):
 @pytest.mark.parametrize(
     ("rule", "rules", "variable_getter", "expected"),
     [
-        ((">", Decimal(5), Decimal(6)), None, None, False),
+        ((">", 5.01, 6.23), None, None, False),
         (
-            ("+", "temp_djf_iamean_s100p_hist", Decimal(6)),
+            ("+", "temp_djf_iamean_s100p_hist", 6.23),
             None,
             partial(get_dict_val, {"temp_djf_iamean_s100p_hist": 20}),
-            26,
+            26.23,
         ),
         (("&&", True, False), None, None, False),
         (("&&", (">", 1, 0), True), None, None, True),
