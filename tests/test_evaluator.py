@@ -63,9 +63,7 @@ def test_evaluate_rule(rule, rules, variable_getter, expected):
 
 @pytest.mark.parametrize(
     ("rule", "rules", "variable_getter"),
-    [
-        (("BAD_EXPR", Decimal(5), Decimal(6)), None, None),
-    ],
+    [(("BAD_EXPR", Decimal(5), Decimal(6)), None, None),],
 )
 def test_evaluate_rule_bad_expression(rule, rules, variable_getter):
     with pytest.raises(NotImplementedError):
