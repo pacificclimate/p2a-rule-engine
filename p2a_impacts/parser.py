@@ -1,5 +1,4 @@
 from sly import Lexer, Parser
-from decimal import Decimal
 
 
 class RuleLexer(Lexer):
@@ -90,7 +89,7 @@ class RuleParser(Parser):
 
     @_("NUMBER")
     def expr(self, p):
-        return Decimal(p.NUMBER)
+        return float(p.NUMBER)
 
     @_("REGION")
     def expr(self, p):
