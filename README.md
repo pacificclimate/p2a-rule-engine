@@ -31,6 +31,12 @@ Install requirements and the package.
 
 To connect to the database the script expects there to be a `.pgpass` file for it to read.
 
+You may also choose to setup to `pre-commit` hook.
+```
+(venv)$ pre-commit install
+```
+This will check each of your commits against the `.pre-commit-config.yml` to ensure it meets the standard.
+
 ### Run
 To run the rule engine and view the results use `process.py` script.
 ```
