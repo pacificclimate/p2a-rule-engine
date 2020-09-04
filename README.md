@@ -14,35 +14,52 @@ Example output:
 }
 ```
 
-### Setup
+## Setup
+Project setup is automated by `make`.
+```
+make
+source /tmp/p2a-re-venv/bin/activate
+```
+
+## Manual Setup
+If you do not wish to use `make`, follow the steps below to setup the project.
+
+### Step 1: Create `venv`
 To run the program create and enter a python3 (3.6+) virtual environment.
 ```
-$python3 -m venv venv
-$source venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-Install requirements and the package.
+### Step 2: Install requirements
+Once you have activated the `venv` you can install the required packages.
 ```
-(venv)$ export CPLUS_INCLUDE_PATH=/usr/include/gdal
-(venv)$ export C_INCLUDE_PATH=/usr/include/gdal
-(venv)$ pip install -i https://pypi.pacificclimate.org/simple -r requirements.txt
-(venv)$ pip install .
+sudo apt-get install -y libpq-dev python3-dev libhdf5-dev libnetcdf-dev libgdal-dev
+export CPLUS_INCLUDE_PATH=/usr/include/gdal
+export C_INCLUDE_PATH=/usr/include/gdal
+pip install -i https://pypi.pacificclimate.org/simple -r requirements.txt
+pip install -e .
 ```
 
-To connect to the database the script expects there to be a `.pgpass` file for it to read.
-
-You may also choose to setup to `pre-commit` hook.
+### Step 3: `.pgpass`
+To connect to the database the script expects there to be a `.pgpass` file for it to read. It should look like so:
 ```
-(venv)$ pre-commit install
+database:port:*:username:password
+```
+You can find these items in TPM.
+
+### Step 4: Pre-commit hook
+While not required, the `pre-commit` hook will help you avoid formatting errors in `actions` during development. While in `venv` run:
+```
+pre-commit install
 ```
 This will check each of your commits against the `.pre-commit-config.yml` to ensure it meets the standard.
 
-### Run
+## Run
 To run the rule engine and view the results use `process.py` script.
 ```
-(venv)$ process.py --csv rules.csv --date-range [date-option] --region [region-option]
+(venv)$ process.py --csv data/rules.csv --date-range [date-option] --region [region-option]
 ```
-
 
 ### Program Flow
 ```
@@ -61,18 +78,18 @@ Evaluate parse trees to determine truth value of each rule (evaluator.py)
 Return result dictionary {rule: True/False/Value} (resolver.py)
 ```
 
-### Testing
+## Testing
 Uses [pytest](https://github.com/pytest-dev/pytest).
 ```
 pytest tests/ --cov --flake8 --cov-report term-missing
 ```
 
-### Releasing
+## Releasing
 
 1. Increment `__version__` in `setup.py`
 2. Summarize release changes in `NEWS.md`
 3. Commit these changes, then tag the release
-```bash
+```
 git add setup.py NEWS.md
 git commit -m"Bump to version x.x.x"
 git tag -a -m"x.x.x" x.x.x
@@ -80,9 +97,8 @@ git push --follow-tags
 ```
 4. Our Github Actions [workflow](https://github.com/pacificclimate/p2a-rule-engine/blob/master/.github/workflows/pypi-publish.yml) will build and release the package
 
-
-### Troubleshooting
-#### Unhashable type: 'MaskedArray' error
+## Troubleshooting
+### Unhashable type: 'MaskedArray' error
 Solution for this [issue](https://github.com/pacificclimate/climate-explorer-backend/issues/97) is ongoing.  A temporary solution is to replace some code in the virtual environment.
 
 Open up the file that's causing the issue.
@@ -110,7 +126,7 @@ lonmax = np.max(nc.variables['lon'][:])
 ```
 This should take care of the issue.
 
-#### No such file or directory error
+### No such file or directory error
 In the case that an error in this form occurs:
 ```
 NETCDF:"file.nc":some_variable: No such file or directory
