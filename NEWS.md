@@ -1,5 +1,12 @@
 # News / Release Notes
 
+## 0.3.0
+
+*4-September-2020*
+
+* Update numerical rule processing
+* Add testing
+
 ## 0.2.0
 
 *22-July-2020*
