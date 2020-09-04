@@ -1,3 +1,4 @@
+pre-commit
 pytest
 pytest-cov
-black
+black==19.10b0
