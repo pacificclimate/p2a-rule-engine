@@ -27,6 +27,12 @@ apt:
 		libnetcdf-dev \
 		libgdal-dev
 
+.PHONY: ci
+ci: apt
+	pip install -U pip
+	pip install -r requirements.txt -r test_requirements.txt
+	pip install .
+
 .PHONY: clean
 clean:
 	rm -rf $(VENV_PATH)
