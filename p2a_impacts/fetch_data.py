@@ -82,22 +82,17 @@ def calculate_result(vals_to_calc, variables, time, timescale):
         try:
             return mean(vals_to_calc)
         except TypeError as e:
-            logger.error(
-                "Unable to get mean of {} in model: {} error: {}".format(
-                    vals_to_calc, model, e
-                )
-            )
+            logger.error("Unable to get mean of {}".format(vals_to_calc))
+            raise e
 
     (val_to_calc,) = vals_to_calc
     if "fdETCCDI" in variables:
         try:
             return get_nffd(val_to_calc, time, timescale)
         except TypeError as e:
-            logger.error(
-                "Unable to compute nffd from fd with {} error: {}".format(
-                    (val_to_calcc, time, timescale), e
-                )
-            )
+            logger.error("Unable to compute nffd from fd with {}".format((val_to_calc, time, timescale)))
+            raise e
+    
     else:
         return val_to_calc
 

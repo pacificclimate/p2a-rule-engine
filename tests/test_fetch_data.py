@@ -1,6 +1,6 @@
 import pytest
 
-from p2a_impacts.fetch_data import read_csv, filter_by_period, translate_args, get_nffd
+from p2a_impacts.fetch_data import read_csv, filter_by_period, translate_args, get_nffd, calculate_result
 
 
 @pytest.mark.parametrize(
@@ -164,3 +164,38 @@ def test_translate_args(
 )
 def test_get_nffd(fd, time, timescale, expected):
     assert get_nffd(fd, time, timescale) == expected
+
+
+@pytest.mark.parametrize(
+    ("fd", "time", "timescale", "calendar"),
+    [
+        (50, 0, "seasonal", "not implemented"),
+    ],
+)
+def test_get_nffd_bad_calendar(fd, time, timescale, calendar):
+    with pytest.raises(NotImplementedError) as e:
+        get_nffd(fd, time, timescale, calendar)
+
+
+@pytest.mark.parametrize(
+    ("vals_to_calc", "variables", "time", "timescale", "expected"),
+    [
+        ([0, 10], ['tasmin', 'tasmax'], 0, "seasonal", 5),
+        ([80], ['fdETCCDI'], 3, "seasonal", 11),
+        ([150], ['fdETCCDI'], 0, "yearly", 215),
+        ([10], [], 0, "yearly", 10),
+    ]
+)
+def test_calculate_result(vals_to_calc, variables, time, timescale, expected):
+    assert calculate_result(vals_to_calc, variables, time, timescale) == expected
+
+@pytest.mark.parametrize(
+    ("vals_to_calc", "variables", "time", "timescale"),
+    [
+        (["bad", "type"], ['tasmin', 'tasmax'], 0, "seasonal"),
+        (["bad_type"], ['fdETCCDI'], 3, "seasonal"),
+    ]
+)
+def test_calculate_result_bad_type(vals_to_calc, variables, time, timescale):
+    with pytest.raises(TypeError) as e:
+        calculate_result(vals_to_calc, variables, time, timescale)
