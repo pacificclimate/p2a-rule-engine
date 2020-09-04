@@ -90,9 +90,13 @@ def calculate_result(vals_to_calc, variables, time, timescale):
         try:
             return get_nffd(val_to_calc, time, timescale)
         except TypeError as e:
-            logger.error("Unable to compute nffd from fd with {}".format((val_to_calc, time, timescale)))
+            logger.error(
+                "Unable to compute nffd from fd with {}".format(
+                    (val_to_calc, time, timescale)
+                )
+            )
             raise e
-    
+
     else:
         return val_to_calc
 
