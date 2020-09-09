@@ -31,7 +31,7 @@ apt:
 ci: apt
 	pip install -U pip
 	pip install -r requirements.txt -r test_requirements.txt
-	pip install .
+	pip install -e .
 
 .PHONY: clean
 clean:
@@ -56,7 +56,10 @@ install: venv
 .PHONY: pre-commit-hook
 pre-commit-hook: venv
 	${PIP} install pre-commit
-	pre-commit install
+	( \
+		source ${VENV_PATH}/bin/activate; \
+		pre-commit install; \
+  )
 
 .PHONY: test
 test: venv
