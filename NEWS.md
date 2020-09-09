@@ -1,5 +1,11 @@
 # News / Release Notes
 
+## 0.3.1
+
+*9-September-2020*
+
+* Update backend and GDAL target versions
+
 ## 0.3.0
 
 *4-September-2020*
