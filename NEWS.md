@@ -1,5 +1,11 @@
 # News / Release Notes
 
+## 0.3.2
+
+*9-September-2020*
+
+* Unpin requests version
+
 ## 0.3.1
 
 *9-September-2020*
