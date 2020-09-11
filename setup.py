@@ -14,7 +14,7 @@ setup(
         "contexttimer==0.3.3",
         "GDAL==3.0.4",
         "numpy==1.16.0",
-        "requests==2.21.0",
+        "requests",
         "sly==0.3",
     ],
     license="GPLv3",
