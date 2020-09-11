@@ -1,5 +1,11 @@
 # News / Release Notes
 
+## 0.3.3
+
+*11-September-2020*
+
+* Unpin requests version in setup.py
+
 ## 0.3.2
 
 *9-September-2020*
