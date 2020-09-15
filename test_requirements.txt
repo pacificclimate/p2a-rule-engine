@@ -1,4 +1,4 @@
-pre-commit
-pytest
-pytest-cov
 black==19.10b0
+pre-commit==2.7.1
+pytest==6.0.2
+pytest-cov==2.10.1
