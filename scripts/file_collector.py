@@ -57,9 +57,7 @@ logger = setup_logging("INFO")
 @click.option(
     "-e", "--ensemble", help="Ensemble name filter for data files", default="p2a_rules"
 )
-@click.option(
-    "-f", "--output_file", help="Path to output file", default="/tmp/output.txt"
-)
+@click.option("-f", "--output_file", help="Path to output file", default="output.txt")
 def file_collection(
     csv, date_range, region, url, ensemble, connection_string, output_file
 ):
@@ -110,8 +108,8 @@ def file_collection(
 
     # write paths to file
     logger.info("Writing file paths to {}".format(output_file))
-    for file_ in file_paths:
-        with open(output_file, "a") as fout:
+    with open(output_file, "a") as fout:
+        for file_ in file_paths:
             fout.write(file_ + "\n")
 
 
