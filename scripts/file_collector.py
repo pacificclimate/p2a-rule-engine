@@ -110,9 +110,13 @@ def write_file_paths(sesh, variables, ensemble, date_range, area):
 
     logger.info("Fetching data for {}".format(var_name))
 
-    with open("/tmp/file_paths.txt", "a") as file_:
-        [file_.write(query_backend(sesh, model, query_args) + "\n") for model in models]
-        logger.info("Writing file path for {} to file".format(var_name))
+    paths = []
+    [paths.extend(query_backend(sesh, model, query_args)) for model in models]
+    logger.info("Writing file path for {} to file".format(var_name))
+
+    with open("file_paths.txt", "a") as file_:
+        for path in paths:
+            file_.write(path + "\n")
 
 
 def query_backend(sesh, model, query_args):
@@ -131,13 +135,15 @@ def query_backend(sesh, model, query_args):
         )
         for var in query_args["variable"]
     ]
+    file_names = []
     for id_ in ids:
         for model_id in list(id_):
             data_file = (
                 sesh.query(DataFile).filter(DataFile.unique_id == model_id).one()
             )
             if data_file is not None:
-                return data_file.filename
+                file_names.append(data_file.filename)
+    return file_names
 
 
 if __name__ == "__main__":
