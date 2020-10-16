@@ -31,8 +31,9 @@ logger = setup_logging("INFO")
     "-d",
     "--date-range",
     help="30 year period for data",
-    default="2080",
-    type=click.Choice(["2020", "2050", "2080", "all"]),
+    default=["2020", "2050", "2080"],
+    type=click.Choice(["2020", "2050", "2080"]),
+    multiple=True,
 )
 @click.option(
     "-r",
@@ -56,11 +57,16 @@ logger = setup_logging("INFO")
 @click.option(
     "-e", "--ensemble", help="Ensemble name filter for data files", default="p2a_rules"
 )
-def file_collection(csv, date_range, region, url, ensemble, connection_string):
+@click.option(
+    "-f", "--output_file", help="Path to output file", default="/tmp/output.txt"
+)
+def file_collection(
+    csv, date_range, region, url, ensemble, connection_string, output_file
+):
     """
     Builds the variables that would be used in in p2a_impacts.resolve_rules
     to the point of accessing the climate explorer database, but instead of evaluating
-    a rule it writes the paths for the files used to a text file.
+    a rule it writes the paths for the files used to a file.
     """
     region = get_region(region, url)
 
@@ -77,7 +83,7 @@ def file_collection(csv, date_range, region, url, ensemble, connection_string):
         try:
             parse_trees[rule], vars, region_var = build_parse_tree(condition)
         except SyntaxError as e:
-            logger.warning("{}, rule will be excluded".format(e))
+            logger.info("{}, rule will be excluded".format(e))
             continue
 
         # check region var
@@ -89,19 +95,28 @@ def file_collection(csv, date_range, region, url, ensemble, connection_string):
             if name not in variables.keys():
                 variables[name] = values
 
-    # get values for all variables we would need if we were doing an evaluation
     logger.info("Collecting variables")
     Session = sessionmaker(create_engine(connection_string))
     sesh = Session()
 
-    # write file paths for each variable to text file
-    for name, values in variables.items():
-        write_file_paths(sesh, values, ensemble, date_range, region)
+    # get file paths by date_range
+    file_paths = set()
+    for date in date_range:
+        logger.info("Getting file paths for {}".format(date))
+
+        # get file paths by variable
+        for name, values in variables.items():
+            file_paths.update(get_paths_by_var(sesh, values, ensemble, date, region))
+
+    # write paths to file
+    logger.info("Writing file paths to {}".format(output_file))
+    for file_ in file_paths:
+        with open(output_file, "a") as fout:
+            fout.write(file_ + "\n")
 
 
-def write_file_paths(sesh, variables, ensemble, date_range, area):
-    """Given a variable name write the required file's path to file_paths.txt
-    by querying the CE backend.
+def get_paths_by_var(sesh, variables, ensemble, date_range, region):
+    """Given a variable name get the required file's path by querying the CE backend.
     """
     logger.info("")
     logger.info("Translating variables for query")
@@ -111,7 +126,7 @@ def write_file_paths(sesh, variables, ensemble, date_range, area):
         variables["temporal"],
         variables["spatial"],
         variables["percentile"],
-        area,
+        region,
         date_range,
         ensemble,
     )
@@ -131,19 +146,15 @@ def write_file_paths(sesh, variables, ensemble, date_range, area):
 
     logger.info("Fetching data for {}".format(var_name))
 
-    paths = []
-    [paths.extend(query_backend(sesh, model, query_args)) for model in models]
-    logger.info("Writing file path for {} to file".format(var_name))
-
-    with open("file_paths.txt", "a") as file_:
-        for path in paths:
-            file_.write(path + "\n")
+    paths = set()
+    [paths.update(query_files(sesh, model, query_args)) for model in models]
+    logger.info("Getting file paths for {}".format(var_name))
+    return paths
 
 
-def query_backend(sesh, model, query_args):
-    """Return the desired file name for a particular climate model"""
-    logger.debug("Running query_backend() with args: %s, %s", model, query_args)
-    ids = [
+def query_files(sesh, model, query_args):
+    """Return the desired file names for a particular climate model"""
+    id_generators = [
         search_for_unique_ids(
             sesh,
             ensemble_name=query_args["ensemble_name"],
@@ -156,14 +167,16 @@ def query_backend(sesh, model, query_args):
         )
         for var in query_args["variable"]
     ]
-    file_names = []
-    for id_ in ids:
-        for model_id in list(id_):
+    file_names = set()
+    for ids in id_generators:
+        for model_id in list(ids):
             data_file = (
                 sesh.query(DataFile).filter(DataFile.unique_id == model_id).one()
             )
+
             if data_file is not None:
-                file_names.append(data_file.filename)
+                file_names.add(data_file.filename)
+
     return file_names
 
 
