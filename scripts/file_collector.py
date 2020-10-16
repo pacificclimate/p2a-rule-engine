@@ -3,11 +3,11 @@ The purpose of this script is to collect all the /storage/ filepaths used by
 the p2a_impacts package.
 """
 
-from argparse import ArgumentParser
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-import logging
+import click
 
+from p2a_impacts.utils import get_region, REGIONS, setup_logging
 from ce.api.util import search_for_unique_ids
 from modelmeta import DataFile
 from p2a_impacts.parser import build_parse_tree
@@ -18,30 +18,51 @@ from p2a_impacts.fetch_data import (
     translate_args,
     get_models,
 )
-from p2a_impacts.utils import get_region, REGIONS
-
-
-def setup_logging(log_level):
-    formatter = logging.Formatter(
-        "%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S"
-    )
-    handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
-    logger = logging.getLogger("scripts")
-    logger.addHandler(handler)
-    logger.setLevel(getattr(logging, log_level))
-    return logger
 
 
 logger = setup_logging("INFO")
 
 
-def file_collection(csv, date_range, region, ensemble, connection_string):
+@click.command()
+@click.option(
+    "-c", "--csv", help="CSV file containing rules", default="./data/rules.csv"
+)
+@click.option(
+    "-d",
+    "--date-range",
+    help="30 year period for data",
+    default="2080",
+    type=click.Choice(["2020", "2050", "2080", "all"]),
+)
+@click.option(
+    "-r",
+    "--region",
+    help="Selected region",
+    default="bc",
+    type=click.Choice(REGIONS.keys()),
+)
+@click.option(
+    "-u",
+    "--url",
+    help="Geoserver URL",
+    default="http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows",
+)
+@click.option(
+    "-x",
+    "--connection-string",
+    help="Database connection string",
+    default="postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta_12f290b63791",
+)
+@click.option(
+    "-e", "--ensemble", help="Ensemble name filter for data files", default="p2a_rules"
+)
+def file_collection(csv, date_range, region, url, ensemble, connection_string):
     """
     Builds the variables that would be used in in p2a_impacts.resolve_rules
     to the point of accessing the climate explorer database, but instead of evaluating
     a rule it writes the paths for the files used to a text file.
     """
+    region = get_region(region, url)
 
     # read csv
     logger.info("Reading {}".format(csv))
@@ -147,41 +168,4 @@ def query_backend(sesh, model, query_args):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-c", "--csv", help="CSV file containing rules", default="./data/rules.csv",
-    )
-    parser.add_argument(
-        "-d",
-        "--date-range",
-        help="30 year period for data",
-        choices=["2020", "2050", "2080"],
-        default="2080",
-    )
-    parser.add_argument(
-        "-r", "--region", help="Selected region", default="bc", choices=REGIONS.keys()
-    )
-    parser.add_argument(
-        "-u",
-        "--url",
-        help="Geoserver URL",
-        default="http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows",
-    )
-    parser.add_argument(
-        "-x",
-        "--connection-string",
-        help="Database connection string",
-        default="postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta_12f290b63791",
-    )
-    parser.add_argument(
-        "-e",
-        "--ensemble",
-        help="Ensemble name filter for data files",
-        default="p2a_rules",
-    )
-    args = parser.parse_args()
-    region = get_region(args.region, args.url)
-
-    file_collection(
-        args.csv, args.date_range, region, args.ensemble, args.connection_string
-    )
+    file_collection()
