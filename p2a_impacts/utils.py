@@ -1,6 +1,6 @@
 import requests
 import csv
-
+import logging
 
 REGIONS = {
     "bc": "British Columbia",
@@ -91,3 +91,15 @@ def get_region(region_name, url):
     for row in csv_data:
         if row["english_na"] == region:
             return row
+
+
+def setup_logging(log_level):
+    formatter = logging.Formatter(
+        "%(asctime)s %(levelname)s: %(message)s", "%Y-%m-%d %H:%M:%S"
+    )
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    logger = logging.getLogger("scripts")
+    logger.addHandler(handler)
+    logger.setLevel(getattr(logging, log_level))
+    return logger
