@@ -20,9 +20,6 @@ from p2a_impacts.fetch_data import (
 )
 
 
-logger = setup_logging("INFO")
-
-
 @click.command()
 @click.option(
     "-c", "--csv", help="CSV file containing rules", default="./data/rules.csv"
@@ -58,14 +55,22 @@ logger = setup_logging("INFO")
     "-e", "--ensemble", help="Ensemble name filter for data files", default="p2a_rules"
 )
 @click.option("-f", "--output_file", help="Path to output file", default="output.txt")
+@click.option(
+    "-l",
+    "--log_level",
+    help="Logging level",
+    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
+    default="INFO",
+)
 def file_collection(
-    csv, date_range, region, url, ensemble, connection_string, output_file
+    csv, date_range, region, url, ensemble, connection_string, output_file, log_level
 ):
     """
     Builds the variables that would be used in in p2a_impacts.resolve_rules
     to the point of accessing the climate explorer database, but instead of evaluating
     a rule it writes the paths for the files used to a file.
     """
+    logger = setup_logging(log_level)
     region = get_region(region, url)
 
     # read csv
@@ -104,7 +109,9 @@ def file_collection(
 
         # get file paths by variable
         for name, values in variables.items():
-            file_paths.update(get_paths_by_var(sesh, values, ensemble, date, region))
+            file_paths.update(
+                get_paths_by_var(sesh, values, ensemble, date, region, logger)
+            )
 
     # write paths to file
     logger.info("Writing file paths to {}".format(output_file))
@@ -113,7 +120,7 @@ def file_collection(
             fout.write(file_ + "\n")
 
 
-def get_paths_by_var(sesh, variables, ensemble, date_range, region):
+def get_paths_by_var(sesh, variables, ensemble, date_range, region, logger):
     """Given a variable name get the required file's path by querying the CE backend.
     """
     logger.info("")

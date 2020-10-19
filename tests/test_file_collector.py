@@ -1,5 +1,7 @@
 import pytest
 from scripts.file_collector import get_paths_by_var
+from p2a_impacts.utils import setup_logging
+
 
 # Most of file_collector's functionality is covered by test_fetch_data.py
 @pytest.mark.parametrize(
@@ -33,9 +35,10 @@ from scripts.file_collector import get_paths_by_var
 )
 def test_get_paths_by_var(populateddb, ensemble, date, area, variables):
     sesh = populateddb.session
+    logger = setup_logging("ERROR")
 
     for name, values in variables.items():
-        paths = get_paths_by_var(sesh, values, ensemble, date, area)
+        paths = get_paths_by_var(sesh, values, ensemble, date, area, logger)
 
     for path in paths:
         assert "/ce/tests/data/" in path
