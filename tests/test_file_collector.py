@@ -35,7 +35,6 @@ def test_get_paths_by_var(populateddb, ensemble, date, area, variables):
     sesh = populateddb.session
 
     for name, values in variables.items():
-        print(values)
         paths = get_paths_by_var(sesh, values, ensemble, date, area)
 
     for path in paths:
