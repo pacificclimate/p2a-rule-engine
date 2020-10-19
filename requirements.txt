@@ -4,3 +4,4 @@ GDAL==3.0.4
 numpy==1.16.0
 requests==2.24.0
 sly==0.3
+click==7.1.2 
