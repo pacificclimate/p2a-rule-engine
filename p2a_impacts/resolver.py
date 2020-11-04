@@ -10,7 +10,7 @@ from .utils import setup_logging
 
 
 def resolve_rules(
-    csv, date_range, region, ensemble, connection_string, log_level="INFO"
+    csv, date_range, region, ensemble, connection_string, thredds, log_level="INFO"
 ):
     """Given a range of parameters run the rule engine
 
@@ -61,7 +61,7 @@ def resolve_rules(
     collected_variables = {}
     for name, values in variables.items():
         try:
-            var = get_variables(sesh, values, ensemble, date_range, region)
+            var = get_variables(sesh, values, ensemble, date_range, region, thredds)
         except Exception as e:
             logger.warning("Error: {} while collecting variable: {}".format(e, name))
         if var is not None:

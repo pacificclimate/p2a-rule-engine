@@ -118,6 +118,7 @@ def query_backend(sesh, model, query_args):
                 variable=var,
                 timescale=query_args["timescale"],
                 cell_method=query_args["cell_method"],
+                is_thredds=query_args["thredds"],
             ),
         )
         for var in query_args["variable"]
@@ -256,7 +257,15 @@ def translate_date(percentile, date_range):
 
 
 def translate_args(
-    variable, time_of_year, temporal, spatial, percentile, area, date_range, ensemble
+    variable,
+    time_of_year,
+    temporal,
+    spatial,
+    percentile,
+    area,
+    date_range,
+    ensemble,
+    thredds,
 ):
     """Given a set of arguments return a dictionary containing their CE
     counterparts
@@ -272,10 +281,11 @@ def translate_args(
         "area": area["the_geom"],
         "dates": translate_date(percentile, date_range),
         "ensemble_name": ensemble,
+        "thredds": thredds,
     }
 
 
-def get_variables(sesh, variables, ensemble, date_range, area):
+def get_variables(sesh, variables, ensemble, date_range, area, thredds):
     """Given a variable name return the value by querying the CE backend
 
     The return value from this method will either be a single value or None.
@@ -293,6 +303,7 @@ def get_variables(sesh, variables, ensemble, date_range, area):
         area,
         date_range,
         ensemble,
+        thredds,
     )
 
     logger.info("Collecting models")
