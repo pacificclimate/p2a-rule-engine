@@ -54,6 +54,9 @@ from p2a_impacts.fetch_data import (
 @click.option(
     "-e", "--ensemble", help="Ensemble name filter for data files", default="p2a_rules"
 )
+@click.option(
+    "-t", "--thredds", help="Target data from thredds server", is_flag=True,
+)
 @click.option("-f", "--output_file", help="Path to output file", default="output.txt")
 @click.option(
     "-l",
@@ -63,7 +66,15 @@ from p2a_impacts.fetch_data import (
     default="INFO",
 )
 def file_collection(
-    csv, date_range, region, url, ensemble, connection_string, output_file, log_level
+    csv,
+    date_range,
+    region,
+    url,
+    ensemble,
+    connection_string,
+    thredds,
+    output_file,
+    log_level,
 ):
     """
     Builds the variables that would be used in in p2a_impacts.resolve_rules
@@ -110,7 +121,7 @@ def file_collection(
         # get file paths by variable
         for name, values in variables.items():
             file_paths.update(
-                get_paths_by_var(sesh, values, ensemble, date, region, logger)
+                get_paths_by_var(sesh, values, ensemble, date, region, thredds, logger)
             )
 
     # write paths to file
@@ -120,7 +131,7 @@ def file_collection(
             fout.write(file_ + "\n")
 
 
-def get_paths_by_var(sesh, variables, ensemble, date_range, region, logger):
+def get_paths_by_var(sesh, variables, ensemble, date_range, region, thredds, logger):
     """Given a variable name get the required file's path by querying the CE backend.
     """
     logger.info("")
@@ -134,6 +145,7 @@ def get_paths_by_var(sesh, variables, ensemble, date_range, region, logger):
         region,
         date_range,
         ensemble,
+        thredds,
     )
 
     logger.info("Collecting models")
