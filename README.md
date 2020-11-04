@@ -61,6 +61,11 @@ To run the rule engine and view the results use `process.py` script.
 (venv)$ process.py --csv data/rules.csv --date-range [date-option] --region [region-option]
 ```
 
+If you wish to use the `--thredds` option please set the appropriate env variable:
+```
+export THREDDS_URL_ROOT=https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/dodsC/datasets
+```
+
 ### Program Flow
 ```
 Read csv and extract id and condition columns (resolver.py)
