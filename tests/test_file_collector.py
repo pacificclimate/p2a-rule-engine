@@ -38,7 +38,7 @@ def test_get_paths_by_var(populateddb, ensemble, date, area, variables):
     logger = setup_logging("ERROR")
 
     for name, values in variables.items():
-        paths = get_paths_by_var(sesh, values, ensemble, date, area, logger)
+        paths = get_paths_by_var(sesh, values, ensemble, date, area, False, logger)
 
     for path in paths:
         assert "/ce/tests/data/" in path
