@@ -1,5 +1,12 @@
 # News / Release Notes
 
+## 0.4.0
+
+*4-November-2020*
+
+* Add file collection script
+* Allow thredds data targeting 
+
 ## 0.3.3
 
 *11-September-2020*
