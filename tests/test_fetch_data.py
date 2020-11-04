@@ -84,6 +84,7 @@ def test_filter_by_period_bad_vars(target, dates, ce_response):
         "area",
         "date_range",
         "ensemble",
+        "thredds",
         "expected",
     ),
     [
@@ -106,6 +107,7 @@ def test_filter_by_period_bad_vars(target, dates, ce_response):
             },
             "2020",
             "p2a_files",
+            True,
             {
                 "variable": ["tasmin", "tasmax"],
                 "cell_method": "mean",
@@ -129,6 +131,7 @@ def test_filter_by_period_bad_vars(target, dates, ce_response):
                     "20100101-20391230",
                 ],
                 "ensemble_name": "p2a_files",
+                "thredds": True,
             },
         )
     ],
@@ -142,6 +145,7 @@ def test_translate_args(
     area,
     date_range,
     ensemble,
+    thredds,
     expected,
 ):  # noqa
     test_args = translate_args(
@@ -153,6 +157,7 @@ def test_translate_args(
         area,
         date_range,
         ensemble,
+        thredds,
     )
     for key in test_args.keys():
         assert test_args[key] == expected[key]
