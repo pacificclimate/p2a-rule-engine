@@ -1,4 +1,5 @@
 import pytest
+from pkg_resources import resource_filename
 
 from p2a_impacts.fetch_data import (
     read_csv,
@@ -45,7 +46,7 @@ from p2a_impacts.fetch_data import (
     ],
 )
 def test_read_csv(expected_rules, expected_conds):
-    rules = read_csv("tests/rules-test.csv")
+    rules = read_csv(resource_filename("tests", "data/rules-test.csv"))
     for rule, cond in rules.items():
         assert rule in expected_rules
         assert cond in expected_conds
