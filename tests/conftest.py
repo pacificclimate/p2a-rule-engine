@@ -20,8 +20,17 @@ from modelmeta.v2 import (
     DataFile,
     DataFileVariableGridded,
 )
+from mm_cataloguer import index_netcdf
 from flask_sqlalchemy import SQLAlchemy
 from netCDF4 import Dataset
+
+
+@pytest.fixture
+def mock_thredds_url_root(monkeypatch):
+    monkeypatch.setenv(
+        "THREDDS_URL_ROOT",
+        "https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/dodsC/datasets",
+    )
 
 
 @pytest.fixture(scope="function")
@@ -78,25 +87,16 @@ def populateddb(cleandb,):
     ]
 
     # Emissions
-
     historical = Emission(short_name="historical")
 
     # Runs
-
-    run3 = Run(name="r1i1p1", emission=historical,)
+    run = Run(name="r1i1p1", emission=historical,)
 
     # Models
 
-    anusplin = Model(
-        short_name="anusplin",
-        long_name="Anusplin",
-        type="GCM",
-        runs=[run3],
-        organization="",
-    )
-    models = [
-        anusplin,
-    ]
+    bnu = Model(short_name="BNU-ESM", type="GCM", runs=[run], organization="BNU")
+    anusplin = Model(short_name="anusplin", type="GCM", runs=[run], organization="")
+    models = [bnu, anusplin]
 
     # Data files
 
@@ -117,12 +117,23 @@ def populateddb(cleandb,):
             run=run,
         )
 
-    df_6_seasonal = make_data_file(
-        unique_id="tasmin_sClim_BNU-ESM_historical_r1i1p1_19650101-19701230", run=run3,
+    df_bnu_seasonal = make_data_file(
+        unique_id="tasmin_sClim_BNU-ESM_historical_r1i1p1_19650101-19701230", run=run,
     )
-
+    df_anusplin_tasmin_seasonal = make_data_file(
+        unique_id="tasmin_sClimMean_anusplin_historical_19710101-20001231",
+        filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmin_sClimMean_anusplin_historical_19710101-20001231.nc",
+        run=run,
+    )
+    df_anusplin_tasmax_seasonal = make_data_file(
+        unique_id="tasmax_sClimMean_anusplin_historical_19710101-20001231",
+        filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmax_sClimMean_anusplin_historical_19710101-20001231.nc",
+        run=run,
+    )
     data_files = [
-        df_6_seasonal,
+        df_bnu_seasonal,
+        df_anusplin_tasmin_seasonal,
+        df_anusplin_tasmax_seasonal,
     ]
 
     # VariableAlias
@@ -180,19 +191,13 @@ def populateddb(cleandb,):
     # DataFileVariable
 
     def make_data_file_variable(
-        file, var_name=None, grid=grid_anuspline,
+        file, cell_methods, var_name=None, grid=grid_anuspline,
     ):
         var_name_to_alias = {
             "tasmin": tasmin,
             "tasmax": tasmax,
             "pr": pr,
             "flow_direction": flow_direction,
-        }[var_name]
-        variable_cell_methods = {
-            "tasmin": "time: minimum",
-            "tasmax": "time: maximum time: standard_deviation over days",
-            "pr": "time: mean time: mean over days",
-            "flow_direction": "foo",
         }[var_name]
         return DataFileVariableGridded(
             file=file,
@@ -201,14 +206,23 @@ def populateddb(cleandb,):
             range_max=50,
             variable_alias=var_name_to_alias,
             grid=grid,
-            variable_cell_methods=variable_cell_methods,
+            variable_cell_methods=cell_methods,
         )
 
-    tmax = make_data_file_variable(df_6_seasonal, var_name="tasmin",)
-
-    data_file_variables = [
-        tmax,
-    ]
+    tmax_bnu = make_data_file_variable(
+        df_bnu_seasonal, cell_methods="time: maximum", var_name="tasmin",
+    )
+    tmin_anusplin = make_data_file_variable(
+        df_anusplin_tasmin_seasonal,
+        cell_methods="time: minimum time: mean over days",
+        var_name="tasmin",
+    )
+    tmax_anusplin = make_data_file_variable(
+        df_anusplin_tasmax_seasonal,
+        cell_methods="time: maximum time: mean over days",
+        var_name="tasmax",
+    )
+    data_file_variables = [tmax_bnu, tmin_anusplin, tmax_anusplin]
 
     sesh.add_all(data_file_variables)
     sesh.flush()
@@ -222,30 +236,29 @@ def populateddb(cleandb,):
     # TimeSets
 
     ts_seasonal = TimeSet(
-        calendar="gregorian",
+        calendar="standard",
         start_date=datetime(1971, 1, 1,),
         end_date=datetime(2000, 12, 31,),
         multi_year_mean=True,
         num_times=4,
         time_resolution="seasonal",
         times=[
-            Time(time_idx=i, timestep=datetime(1985, 3 * i + 1, 15,),) for i in range(4)
+            Time(time_idx=i, timestep=datetime(1986, 3 * i + 1, 16,),) for i in range(4)
         ],
         climatological_times=[
             ClimatologicalTime(
                 time_idx=i,
                 time_start=datetime(1971, 3 * i + 1, 1,) - relativedelta(months=1),
-                time_end=datetime(2000, 3 * i + 1, 1,)
-                + relativedelta(months=2)
-                - relativedelta(days=1),
+                time_end=datetime(2000, 3 * i + 1, 1,) + relativedelta(months=2),
             )
             for i in range(4)
         ],
     )
     ts_seasonal.files = [
-        df_6_seasonal,
+        df_bnu_seasonal,
+        df_anusplin_tasmin_seasonal,
+        df_anusplin_tasmax_seasonal,
     ]
-
     sesh.add_all(sesh.dirty)
 
     sesh.commit()
