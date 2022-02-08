@@ -16,7 +16,7 @@ from p2a_impacts.utils import get_region, REGIONS, create_session
     "-d",
     "--date-range",
     help="30 year period for data",
-    type=click.Choice(["2020", "2050", "2080"]),
+    type=click.Choice(["hist", "2020", "2050", "2080"]),
     default="2080",
 )
 @click.option(
