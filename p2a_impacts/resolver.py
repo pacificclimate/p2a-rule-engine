@@ -1,5 +1,4 @@
 from functools import partial
-import logging
 
 from .parser import build_parse_tree
 from .evaluator import evaluate_rule

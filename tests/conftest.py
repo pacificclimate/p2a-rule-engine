@@ -20,9 +20,7 @@ from modelmeta.v2 import (
     DataFile,
     DataFileVariableGridded,
 )
-from mm_cataloguer import index_netcdf
 from flask_sqlalchemy import SQLAlchemy
-from netCDF4 import Dataset
 
 
 @pytest.fixture

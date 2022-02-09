@@ -9,9 +9,7 @@ from p2a_impacts.utils import get_region, REGIONS, setup_logging, create_session
 from ce.api.util import search_for_unique_ids
 from modelmeta import DataFile
 from p2a_impacts.parser import build_parse_tree
-from p2a_impacts.evaluator import evaluate_rule
 from p2a_impacts.fetch_data import (
-    get_dict_val,
     read_csv,
     translate_args,
     get_models,
