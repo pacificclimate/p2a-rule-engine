@@ -120,7 +120,7 @@ def populateddb(cleandb,):
 
     df_bnu_seasonal = make_data_file(
         unique_id="tasmin_sClim_BNU-ESM_historical_r1i1p1_19650101-19701230", run=run1,
-    )
+    )  # Only local file (only used to test file collector). All other files from THREDDS.
     df_anusplin_tasmin_seasonal = make_data_file(
         unique_id="tasmin_sClimMean_anusplin_historical_19710101-20001231",
         filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmin_sClimMean_anusplin_historical_19710101-20001231.nc",
