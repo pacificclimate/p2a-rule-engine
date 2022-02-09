@@ -88,15 +88,18 @@ def populateddb(cleandb,):
 
     # Emissions
     historical = Emission(short_name="historical")
+    historical_rcp85 = Emission(short_name="historical,rcp85")
 
     # Runs
-    run = Run(name="r1i1p1", emission=historical,)
+    run1 = Run(name="r1i1p1", emission=historical)
+    run2 = Run(name="r1i1p1", emission=historical_rcp85)
 
     # Models
 
-    bnu = Model(short_name="BNU-ESM", type="GCM", runs=[run], organization="BNU")
-    anusplin = Model(short_name="anusplin", type="GCM", runs=[run], organization="")
-    models = [bnu, anusplin]
+    bnu = Model(short_name="BNU-ESM", type="GCM", runs=[run1], organization="BNU")
+    anusplin = Model(short_name="anusplin", type="GCM", runs=[run1], organization="")
+    canesm2 = Model(short_name="CanESM2", type="GCM", runs=[run2], organization="")
+    models = [bnu, anusplin, canesm2]
 
     # Data files
 
@@ -118,22 +121,64 @@ def populateddb(cleandb,):
         )
 
     df_bnu_seasonal = make_data_file(
-        unique_id="tasmin_sClim_BNU-ESM_historical_r1i1p1_19650101-19701230", run=run,
+        unique_id="tasmin_sClim_BNU-ESM_historical_r1i1p1_19650101-19701230", run=run1,
     )
     df_anusplin_tasmin_seasonal = make_data_file(
         unique_id="tasmin_sClimMean_anusplin_historical_19710101-20001231",
         filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmin_sClimMean_anusplin_historical_19710101-20001231.nc",
-        run=run,
+        run=run1,
     )
     df_anusplin_tasmax_seasonal = make_data_file(
         unique_id="tasmax_sClimMean_anusplin_historical_19710101-20001231",
         filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmax_sClimMean_anusplin_historical_19710101-20001231.nc",
-        run=run,
+        run=run1,
+    )
+    df_anusplin_tasmin_mon = make_data_file(
+        unique_id="tasmin_mClimMean_anusplin_historical_19710101-20001231",
+        filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmin_mClimMean_anusplin_historical_19710101-20001231.nc",
+        run=run1,
+    )
+    df_anusplin_tasmax_mon = make_data_file(
+        unique_id="tasmax_mClimMean_anusplin_historical_19710101-20001231",
+        filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmax_mClimMean_anusplin_historical_19710101-20001231.nc",
+        run=run1,
+    )
+    df_anusplin_pr_seasonal = make_data_file(
+        unique_id="pr_sClimMean_anusplin_historical_19710101-20001231",
+        filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/pr_sClimMean_anusplin_historical_19710101-20001231.nc",
+        run=run1,
+    )
+    df_canesm2_tasmin_2050_seasonal = make_data_file(
+        unique_id="tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada",
+        filename="/storage/data/projects/comp_support/climate_explorer_data_prep/climatological_means/downscale/output/2433/tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada.nc",
+        run=run2,
+    )
+    df_canesm2_tasmax_2050_seasonal = make_data_file(
+        unique_id="tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada",
+        filename="/storage/data/projects/comp_support/climate_explorer_data_prep/climatological_means/downscale/output/2495/tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada.nc",
+        run=run2,
+    )
+    df_canesm2_tasmin_2080_seasonal = make_data_file(
+        unique_id="tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada",
+        filename="/storage/data/projects/comp_support/climate_explorer_data_prep/climatological_means/downscale/output/2433/tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada.nc",
+        run=run2,
+    )
+    df_canesm2_tasmax_2080_seasonal = make_data_file(
+        unique_id="tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada",
+        filename="/storage/data/projects/comp_support/climate_explorer_data_prep/climatological_means/downscale/output/2495/tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada.nc",
+        run=run2,
     )
     data_files = [
         df_bnu_seasonal,
         df_anusplin_tasmin_seasonal,
         df_anusplin_tasmax_seasonal,
+        df_anusplin_tasmin_mon,
+        df_anusplin_tasmax_mon,
+        df_anusplin_pr_seasonal,
+        df_canesm2_tasmin_2050_seasonal,
+        df_canesm2_tasmax_2050_seasonal,
+        df_canesm2_tasmin_2080_seasonal,
+        df_canesm2_tasmax_2080_seasonal,
     ]
 
     # VariableAlias
@@ -212,17 +257,63 @@ def populateddb(cleandb,):
     tmax_bnu = make_data_file_variable(
         df_bnu_seasonal, cell_methods="time: maximum", var_name="tasmin",
     )
-    tmin_anusplin = make_data_file_variable(
+    tmin_anusplin_seasonal = make_data_file_variable(
         df_anusplin_tasmin_seasonal,
         cell_methods="time: minimum time: mean over days",
         var_name="tasmin",
     )
-    tmax_anusplin = make_data_file_variable(
+    tmax_anusplin_seasonal = make_data_file_variable(
         df_anusplin_tasmax_seasonal,
         cell_methods="time: maximum time: mean over days",
         var_name="tasmax",
     )
-    data_file_variables = [tmax_bnu, tmin_anusplin, tmax_anusplin]
+    tmin_anusplin_mon = make_data_file_variable(
+        df_anusplin_tasmin_mon,
+        cell_methods="time: minimum time: mean over days",
+        var_name="tasmin",
+    )
+    tmax_anusplin_mon = make_data_file_variable(
+        df_anusplin_tasmax_mon,
+        cell_methods="time: minimum time: mean over days",
+        var_name="tasmax",
+    )
+    pr_anusplin = make_data_file_variable(
+        df_anusplin_pr_seasonal,
+        cell_methods="time: mean time: mean over days",
+        var_name="pr",
+    )
+    tmin_canesm2_2050 = make_data_file_variable(
+        df_canesm2_tasmin_2050_seasonal,
+        cell_methods="time: minimum",
+        var_name="tasmin",
+    )
+    tmax_canesm2_2050 = make_data_file_variable(
+        df_canesm2_tasmax_2050_seasonal,
+        cell_methods="time: maximum",
+        var_name="tasmax",
+    )
+    tmin_canesm2_2080 = make_data_file_variable(
+        df_canesm2_tasmin_2080_seasonal,
+        cell_methods="time: minimum",
+        var_name="tasmin",
+    )
+    tmax_canesm2_2080 = make_data_file_variable(
+        df_canesm2_tasmax_2080_seasonal,
+        cell_methods="time: maximum",
+        var_name="tasmax",
+    )
+    data_file_variables = [
+        tmax_bnu,
+        tmin_anusplin_seasonal,
+        tmax_anusplin_seasonal,
+        tmin_anusplin_mon,
+        tmax_anusplin_mon,
+        pr_anusplin,
+        tmin_canesm2_2050,
+        tmax_canesm2_2050,
+        tmin_canesm2_2080,
+        tmax_canesm2_2080,
+    ]
 
     sesh.add_all(data_file_variables)
     sesh.flush()
@@ -235,7 +326,7 @@ def populateddb(cleandb,):
 
     # TimeSets
 
-    ts_seasonal = TimeSet(
+    ts_hist_seasonal = TimeSet(
         calendar="standard",
         start_date=datetime(1971, 1, 1,),
         end_date=datetime(2000, 12, 31,),
@@ -254,10 +345,111 @@ def populateddb(cleandb,):
             for i in range(4)
         ],
     )
-    ts_seasonal.files = [
+    ts_hist_mon = TimeSet(
+        calendar="standard",
+        start_date=datetime(1971, 1, 1,),
+        end_date=datetime(2000, 12, 31,),
+        multi_year_mean=True,
+        num_times=12,
+        time_resolution="monthly",
+        times=[
+            Time(time_idx=i, timestep=datetime(1986, i + 1, 15,),) for i in range(12)
+        ],
+        climatological_times=[
+            ClimatologicalTime(
+                time_idx=i,
+                time_start=datetime(1971, i + 1, 1,),
+                time_end=datetime(2000, i + 1, 1,) + relativedelta(months=1),
+            )
+            for i in range(12)
+        ],
+    )
+    ts_2050_seasonal = TimeSet(
+        calendar="standard",
+        start_date=datetime(2040, 1, 1,),
+        end_date=datetime(2069, 12, 31,),
+        multi_year_mean=True,
+        num_times=4,
+        time_resolution="seasonal",
+        times=[
+            Time(time_idx=0, timestep=datetime(2054, 11, 27,)),
+            Time(time_idx=1, timestep=datetime(2055, 2, 25,)),
+            Time(time_idx=2, timestep=datetime(2055, 5, 27,)),
+            Time(time_idx=3, timestep=datetime(2055, 8, 27,)),
+        ],
+        climatological_times=[
+            ClimatologicalTime(
+                time_idx=0,
+                time_start=datetime(2039, 10, 16),
+                time_end=datetime(2069, 1, 6),
+            ),
+            ClimatologicalTime(
+                time_idx=1,
+                time_start=datetime(2040, 1, 14),
+                time_end=datetime(2069, 4, 8),
+            ),
+            ClimatologicalTime(
+                time_idx=2,
+                time_start=datetime(2040, 4, 15),
+                time_end=datetime(2069, 7, 9),
+            ),
+            ClimatologicalTime(
+                time_idx=3,
+                time_start=datetime(2040, 7, 16),
+                time_end=datetime(2069, 10, 8),
+            ),
+        ],
+    )
+    ts_2080_seasonal = TimeSet(
+        calendar="standard",
+        start_date=datetime(2040, 1, 1,),
+        end_date=datetime(2069, 12, 31,),
+        multi_year_mean=True,
+        num_times=4,
+        time_resolution="seasonal",
+        times=[
+            Time(time_idx=0, timestep=datetime(2084, 11, 19,)),
+            Time(time_idx=1, timestep=datetime(2085, 2, 17,)),
+            Time(time_idx=2, timestep=datetime(2085, 5, 19,)),
+            Time(time_idx=3, timestep=datetime(2085, 8, 19,)),
+        ],
+        climatological_times=[
+            ClimatologicalTime(
+                time_idx=0,
+                time_start=datetime(2069, 10, 8),
+                time_end=datetime(2098, 12, 30),
+            ),
+            ClimatologicalTime(
+                time_idx=1,
+                time_start=datetime(2070, 1, 6),
+                time_end=datetime(2099, 4, 1),
+            ),
+            ClimatologicalTime(
+                time_idx=2,
+                time_start=datetime(2070, 4, 8),
+                time_end=datetime(2099, 7, 2),
+            ),
+            ClimatologicalTime(
+                time_idx=3,
+                time_start=datetime(2070, 7, 9),
+                time_end=datetime(2099, 10, 1),
+            ),
+        ],
+    )
+    ts_hist_seasonal.files = [
         df_bnu_seasonal,
         df_anusplin_tasmin_seasonal,
         df_anusplin_tasmax_seasonal,
+        df_anusplin_pr_seasonal,
+    ]
+    ts_hist_mon.files = [df_anusplin_tasmin_mon, df_anusplin_tasmax_mon]
+    ts_2050_seasonal.files = [
+        df_canesm2_tasmin_2050_seasonal,
+        df_canesm2_tasmax_2050_seasonal,
+    ]
+    ts_2080_seasonal.files = [
+        df_canesm2_tasmin_2080_seasonal,
+        df_canesm2_tasmax_2080_seasonal,
     ]
     sesh.add_all(sesh.dirty)
 

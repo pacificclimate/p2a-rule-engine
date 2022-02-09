@@ -1,0 +1,2 @@
+"id";"condition";"category";"sector";"text1";"text2";"comment"
+"shm";"(temp_jul_iamean_smean_hist / ((prec_jja_iamean_smean_hist / 1000) * 92))";;;"Internal rule";"The Summer Heat-to-Moisture index, or SH:M, is an index that defines roughly how dry conditions are. Higher numbers indicate drier conditions.";"internal summer heat:moisture rule"

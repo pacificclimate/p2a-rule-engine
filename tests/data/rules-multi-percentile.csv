@@ -1,0 +1,4 @@
+"id";"condition";"category";"sector";"text1";"text2";"comment"
+"future-snow";"(temp_djf_iamean_s0p_hist + temp_djf_iamean_s0p_e25p <= -6)";;;"Internal rule";"Internal rule";"internal future Snow rule"
+"future-hybrid";"((temp_djf_iamean_s0p_hist + temp_djf_iamean_s0p_e25p <= -6) && (temp_djf_iamean_s100p_hist + temp_djf_iamean_s100p_e75p >= -6)) || ((temp_djf_iamean_s0p_hist + temp_djf_iamean_s0p_e25p <= 5) && (temp_djf_iamean_s100p_hist + temp_djf_iamean_s100p_e75p >= 5)) || ((temp_djf_iamean_s0p_hist + temp_djf_iamean_s0p_e75p >= -6) && (temp_djf_iamean_s100p_hist + temp_djf_iamean_s100p_e25p <= 5))";;;"Internal rule";"Internal rule";"internal Hybrid rule"
+"future-rain";"(temp_djf_iamean_s100p_hist + temp_djf_iamean_s100p_e75p >= 5)";;;"Internal rule";"Internal rule";"internal Rain rule"
