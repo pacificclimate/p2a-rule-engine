@@ -60,7 +60,7 @@ def process(
         raise Exception("{} region was not found".format(region))
 
     sesh = create_session(connection_string)
-    rules = resolve_rules(csv, date_range, region, ensemble, sesh, thredds, log_level,)
+    rules = resolve_rules(csv, date_range, region, ensemble, sesh, thredds, log_level)
     json.dump(rules, sys.stdout)
 
 

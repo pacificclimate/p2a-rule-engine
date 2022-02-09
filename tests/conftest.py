@@ -79,7 +79,7 @@ def populateddb(cleandb,):
 
     # Ensembles
 
-    p2a_rules = Ensemble(name="p2a_rules", version=1.0, changes="", description="",)
+    p2a_rules = Ensemble(name="p2a_rules", version=1.0, changes="", description="")
     ensembles = [
         p2a_rules,
     ]
@@ -107,7 +107,7 @@ def populateddb(cleandb,):
         if not filename:
             filename = "{}.nc".format(unique_id)
         if not filename.startswith("/"):
-            filename = resource_filename("ce", "tests/data/{}".format(filename),)
+            filename = resource_filename("ce", "tests/data/{}".format(filename))
         return DataFile(
             filename=filename,
             unique_id=unique_id,
@@ -326,54 +326,52 @@ def populateddb(cleandb,):
 
     ts_hist_seasonal = TimeSet(
         calendar="standard",
-        start_date=datetime(1971, 1, 1,),
-        end_date=datetime(2000, 12, 31,),
+        start_date=datetime(1971, 1, 1),
+        end_date=datetime(2000, 12, 31),
         multi_year_mean=True,
         num_times=4,
         time_resolution="seasonal",
         times=[
-            Time(time_idx=i, timestep=datetime(1986, 3 * i + 1, 16,),) for i in range(4)
+            Time(time_idx=i, timestep=datetime(1986, 3 * i + 1, 16)) for i in range(4)
         ],
         climatological_times=[
             ClimatologicalTime(
                 time_idx=i,
-                time_start=datetime(1971, 3 * i + 1, 1,) - relativedelta(months=1),
-                time_end=datetime(2000, 3 * i + 1, 1,) + relativedelta(months=2),
+                time_start=datetime(1971, 3 * i + 1, 1) - relativedelta(months=1),
+                time_end=datetime(2000, 3 * i + 1, 1) + relativedelta(months=2),
             )
             for i in range(4)
         ],
     )
     ts_hist_mon = TimeSet(
         calendar="standard",
-        start_date=datetime(1971, 1, 1,),
-        end_date=datetime(2000, 12, 31,),
+        start_date=datetime(1971, 1, 1),
+        end_date=datetime(2000, 12, 31),
         multi_year_mean=True,
         num_times=12,
         time_resolution="monthly",
-        times=[
-            Time(time_idx=i, timestep=datetime(1986, i + 1, 15,),) for i in range(12)
-        ],
+        times=[Time(time_idx=i, timestep=datetime(1986, i + 1, 15)) for i in range(12)],
         climatological_times=[
             ClimatologicalTime(
                 time_idx=i,
-                time_start=datetime(1971, i + 1, 1,),
-                time_end=datetime(2000, i + 1, 1,) + relativedelta(months=1),
+                time_start=datetime(1971, i + 1, 1),
+                time_end=datetime(2000, i + 1, 1) + relativedelta(months=1),
             )
             for i in range(12)
         ],
     )
     ts_2050_seasonal = TimeSet(
         calendar="standard",
-        start_date=datetime(2040, 1, 1,),
-        end_date=datetime(2069, 12, 31,),
+        start_date=datetime(2040, 1, 1),
+        end_date=datetime(2069, 12, 31),
         multi_year_mean=True,
         num_times=4,
         time_resolution="seasonal",
         times=[
-            Time(time_idx=0, timestep=datetime(2054, 11, 27,)),
-            Time(time_idx=1, timestep=datetime(2055, 2, 25,)),
-            Time(time_idx=2, timestep=datetime(2055, 5, 27,)),
-            Time(time_idx=3, timestep=datetime(2055, 8, 27,)),
+            Time(time_idx=0, timestep=datetime(2054, 11, 27)),
+            Time(time_idx=1, timestep=datetime(2055, 2, 25)),
+            Time(time_idx=2, timestep=datetime(2055, 5, 27)),
+            Time(time_idx=3, timestep=datetime(2055, 8, 27)),
         ],
         climatological_times=[
             ClimatologicalTime(
@@ -400,16 +398,16 @@ def populateddb(cleandb,):
     )
     ts_2080_seasonal = TimeSet(
         calendar="standard",
-        start_date=datetime(2040, 1, 1,),
-        end_date=datetime(2069, 12, 31,),
+        start_date=datetime(2070, 1, 1),
+        end_date=datetime(2099, 12, 31),
         multi_year_mean=True,
         num_times=4,
         time_resolution="seasonal",
         times=[
-            Time(time_idx=0, timestep=datetime(2084, 11, 19,)),
-            Time(time_idx=1, timestep=datetime(2085, 2, 17,)),
-            Time(time_idx=2, timestep=datetime(2085, 5, 19,)),
-            Time(time_idx=3, timestep=datetime(2085, 8, 19,)),
+            Time(time_idx=0, timestep=datetime(2084, 11, 1,)),
+            Time(time_idx=1, timestep=datetime(2085, 2, 17)),
+            Time(time_idx=2, timestep=datetime(2085, 5, 19)),
+            Time(time_idx=3, timestep=datetime(2085, 8, 19)),
         ],
         climatological_times=[
             ClimatologicalTime(
