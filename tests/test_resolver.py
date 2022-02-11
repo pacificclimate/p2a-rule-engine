@@ -5,7 +5,6 @@ from p2a_impacts.resolver import resolve_rules
 from p2a_impacts.utils import get_region
 
 
-@pytest.mark.online
 @pytest.mark.slow
 @pytest.mark.parametrize(
     ("csv", "date_range", "region", "geoserver", "ensemble", "thredds"),
@@ -21,14 +20,7 @@ from p2a_impacts.utils import get_region
     ],
 )
 def test_resolve_rules_basic(
-    populateddb,
-    mock_thredds_url_root,
-    csv,
-    date_range,
-    region,
-    geoserver,
-    ensemble,
-    thredds,
+    populateddb, mock_urls, csv, date_range, region, geoserver, ensemble, thredds,
 ):
     sesh = populateddb.session
     rules = resolve_rules(

@@ -22,6 +22,8 @@ from modelmeta.v2 import (
 )
 from flask_sqlalchemy import SQLAlchemy
 
+from .mock_data import geoserver_data, tasmin_data, tasmax_data
+
 
 @pytest.fixture
 def mock_thredds_url_root(monkeypatch):
@@ -451,3 +453,26 @@ def populateddb(cleandb,):
 
     sesh.commit()
     return populateable_db
+
+
+@pytest.fixture()
+def mock_urls(requests_mock):
+    requests_mock.register_uri(
+        "GET",
+        "http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows",
+        content=geoserver_data,
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/fileServer/datasets"
+        "/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/"
+        "tasmin_sClimMean_anusplin_historical_19710101-20001231.nc",
+        content=tasmin_data,
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/fileServer/datasets"
+        "/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/"
+        "tasmax_sClimMean_anusplin_historical_19710101-20001231.nc",
+        content=tasmax_data,
+    )

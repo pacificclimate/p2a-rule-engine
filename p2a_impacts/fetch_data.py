@@ -48,7 +48,6 @@ def filter_by_period(target, dates, periods):
         for date in dates:
             if date in key:
                 try:
-                    print(periods[key][target])
                     return periods[key][target]
                 except KeyError as e:
                     logger.exception("Bad target variable: %s", target)
