@@ -104,15 +104,13 @@ def populateddb(cleandb,):
     # Data files
 
     def make_data_file(
-        unique_id, filename=None, run=None,
+        filename=None, run=None,
     ):
-        if not filename:
-            filename = "{}.nc".format(unique_id)
         if not filename.startswith("/"):
             filename = resource_filename("ce", "tests/data/{}".format(filename))
         return DataFile(
             filename=filename,
-            unique_id=unique_id,
+            unique_id=filename,
             first_1mib_md5sum="xxxx",
             x_dim_name="lon",
             y_dim_name="lat",
@@ -121,65 +119,63 @@ def populateddb(cleandb,):
         )
 
     df_bnu_seasonal = make_data_file(
-        unique_id="tasmin_sClim_BNU-ESM_historical_r1i1p1_19650101-19701230", run=run1,
+        filename="tasmin_sClim_BNU-ESM_historical_r1i1p1_19650101-19701230.nc",
+        run=run1,
     )  # Only local file (only used to test file collector). All other files from THREDDS.
+
+    storage_root_anusplin = (
+        "/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/"
+    )
+    storage_root_canesm2 = "/storage/data/projects/comp_support/climate_explorer_data_prep/climatological_means/downscale/output/"
+    canesm2_tasmin_root = storage_root_canesm2 + "2433/"
+    canesm2_tasmax_root = storage_root_canesm2 + "2495/"
+
     df_anusplin_tasmin_seasonal = make_data_file(
-        unique_id="tasmin_sClimMean_anusplin_historical_19710101-20001231",
-        filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmin_sClimMean_anusplin_historical_19710101-20001231.nc",
+        filename=storage_root_anusplin
+        + "tasmin_sClimMean_anusplin_historical_19710101-20001231.nc",
         run=run1,
     )
     df_anusplin_tasmax_seasonal = make_data_file(
-        unique_id="tasmax_sClimMean_anusplin_historical_19710101-20001231",
-        filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmax_sClimMean_anusplin_historical_19710101-20001231.nc",
+        filename=storage_root_anusplin
+        + "tasmax_sClimMean_anusplin_historical_19710101-20001231.nc",
         run=run1,
     )
     df_anusplin_tasmin_mon = make_data_file(
-        unique_id="tasmin_mClimMean_anusplin_historical_19710101-20001231",
-        filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmin_mClimMean_anusplin_historical_19710101-20001231.nc",
+        filename=storage_root_anusplin
+        + "tasmin_mClimMean_anusplin_historical_19710101-20001231.nc",
         run=run1,
     )
     df_anusplin_tasmax_mon = make_data_file(
-        unique_id="tasmax_mClimMean_anusplin_historical_19710101-20001231",
-        filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmax_mClimMean_anusplin_historical_19710101-20001231.nc",
+        filename=storage_root_anusplin
+        + "tasmax_mClimMean_anusplin_historical_19710101-20001231.nc",
         run=run1,
     )
     df_anusplin_pr_seasonal = make_data_file(
-        unique_id="pr_sClimMean_anusplin_historical_19710101-20001231",
-        filename="/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/pr_sClimMean_anusplin_historical_19710101-20001231.nc",
+        filename=storage_root_anusplin
+        + "pr_sClimMean_anusplin_historical_19710101-20001231.nc",
         run=run1,
     )
     df_canesm2_tasmin_2050_seasonal = make_data_file(
-        unique_id="tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada",
-        filename="/storage/data/projects/comp_support/climate_explorer_data_prep/climatological_means/downscale/output/2433/tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada.nc",
+        filename=canesm2_tasmin_root
+        + "tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada.nc",
         run=run2,
     )
     df_canesm2_tasmax_2050_seasonal = make_data_file(
-        unique_id="tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada",
-        filename="/storage/data/projects/comp_support/climate_explorer_data_prep/climatological_means/downscale/output/2495/tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada.nc",
+        filename=canesm2_tasmax_root
+        + "tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada.nc",
         run=run2,
     )
     df_canesm2_tasmin_2080_seasonal = make_data_file(
-        unique_id="tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada",
-        filename="/storage/data/projects/comp_support/climate_explorer_data_prep/climatological_means/downscale/output/2433/tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada.nc",
+        filename=canesm2_tasmin_root
+        + "tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada.nc",
         run=run2,
     )
     df_canesm2_tasmax_2080_seasonal = make_data_file(
-        unique_id="tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada",
-        filename="/storage/data/projects/comp_support/climate_explorer_data_prep/climatological_means/downscale/output/2495/tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada.nc",
+        filename=canesm2_tasmax_root
+        + "tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada.nc",
         run=run2,
     )
-    data_files = [
-        df_bnu_seasonal,
-        df_anusplin_tasmin_seasonal,
-        df_anusplin_tasmax_seasonal,
-        df_anusplin_tasmin_mon,
-        df_anusplin_tasmax_mon,
-        df_anusplin_pr_seasonal,
-        df_canesm2_tasmin_2050_seasonal,
-        df_canesm2_tasmax_2050_seasonal,
-        df_canesm2_tasmin_2080_seasonal,
-        df_canesm2_tasmax_2080_seasonal,
-    ]
+    data_files = [v for k, v in locals().items() if k.startswith("df")]
 
     # VariableAlias
 
@@ -302,18 +298,10 @@ def populateddb(cleandb,):
         cell_methods="time: maximum",
         var_name="tasmax",
     )
+    var_names = ("tmin", "tmax")
     data_file_variables = [
-        tmax_bnu,
-        tmin_anusplin_seasonal,
-        tmax_anusplin_seasonal,
-        tmin_anusplin_mon,
-        tmax_anusplin_mon,
-        pr_anusplin,
-        tmin_canesm2_2050,
-        tmax_canesm2_2050,
-        tmin_canesm2_2080,
-        tmax_canesm2_2080,
-    ]
+        v for k, v in locals().items() if k.startswith(var_names)
+    ] + [pr_anusplin]
 
     sesh.add_all(data_file_variables)
     sesh.flush()
