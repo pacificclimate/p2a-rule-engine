@@ -358,32 +358,19 @@ def populateddb(cleandb,):
         num_times=4,
         time_resolution="seasonal",
         times=[
-            Time(time_idx=0, timestep=datetime(2054, 11, 27)),
-            Time(time_idx=1, timestep=datetime(2055, 2, 25)),
-            Time(time_idx=2, timestep=datetime(2055, 5, 27)),
-            Time(time_idx=3, timestep=datetime(2055, 8, 27)),
+            Time(
+                time_idx=i,
+                timestep=datetime(2054, 11, 27) + relativedelta(months=3 * i),
+            )
+            for i in range(4)
         ],
         climatological_times=[
             ClimatologicalTime(
-                time_idx=0,
-                time_start=datetime(2039, 10, 16),
-                time_end=datetime(2069, 1, 6),
-            ),
-            ClimatologicalTime(
-                time_idx=1,
-                time_start=datetime(2040, 1, 14),
-                time_end=datetime(2069, 4, 8),
-            ),
-            ClimatologicalTime(
-                time_idx=2,
-                time_start=datetime(2040, 4, 15),
-                time_end=datetime(2069, 7, 9),
-            ),
-            ClimatologicalTime(
-                time_idx=3,
-                time_start=datetime(2040, 7, 16),
-                time_end=datetime(2069, 10, 8),
-            ),
+                time_idx=i,
+                time_start=datetime(2040, 3 * i + 1, 16) - relativedelta(months=1),
+                time_end=datetime(2069, 3 * i + 1, 6),
+            )
+            for i in range(4)
         ],
     )
     ts_2080_seasonal = TimeSet(
@@ -394,32 +381,19 @@ def populateddb(cleandb,):
         num_times=4,
         time_resolution="seasonal",
         times=[
-            Time(time_idx=0, timestep=datetime(2084, 11, 1,)),
-            Time(time_idx=1, timestep=datetime(2085, 2, 17)),
-            Time(time_idx=2, timestep=datetime(2085, 5, 19)),
-            Time(time_idx=3, timestep=datetime(2085, 8, 19)),
+            Time(
+                time_idx=i,
+                timestep=datetime(2084, 11, 19) + relativedelta(months=3 * i),
+            )
+            for i in range(4)
         ],
         climatological_times=[
             ClimatologicalTime(
-                time_idx=0,
-                time_start=datetime(2069, 10, 8),
-                time_end=datetime(2098, 12, 30),
-            ),
-            ClimatologicalTime(
-                time_idx=1,
-                time_start=datetime(2070, 1, 6),
-                time_end=datetime(2099, 4, 1),
-            ),
-            ClimatologicalTime(
-                time_idx=2,
-                time_start=datetime(2070, 4, 8),
-                time_end=datetime(2099, 7, 2),
-            ),
-            ClimatologicalTime(
-                time_idx=3,
-                time_start=datetime(2070, 7, 9),
-                time_end=datetime(2099, 10, 1),
-            ),
+                time_idx=i,
+                time_start=datetime(2070, 3 * i + 1, 8) - relativedelta(months=3),
+                time_end=datetime(2099, 3 * i + 1, 1),
+            )
+            for i in range(4)
         ],
     )
     ts_hist_seasonal.files = [
