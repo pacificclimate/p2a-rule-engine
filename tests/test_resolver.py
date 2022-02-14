@@ -20,7 +20,15 @@ from p2a_impacts.utils import get_region
     ],
 )
 def test_resolve_rules_basic(
-    populateddb, mock_urls, csv, date_range, region, geoserver, ensemble, thredds,
+    populateddb,
+    mock_thredds_url_root,
+    mock_urls,
+    csv,
+    date_range,
+    region,
+    geoserver,
+    ensemble,
+    thredds,
 ):
     sesh = populateddb.session
     rules = resolve_rules(
