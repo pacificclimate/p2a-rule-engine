@@ -1,7 +1,7 @@
 ce==3.2.0
 contexttimer==0.3.3
 GDAL==3.0.4
-numpy==1.16.0
+numpy==1.21.0
 requests==2.24.0
 sly==0.3
 click==7.1.2
