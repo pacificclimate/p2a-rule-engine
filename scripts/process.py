@@ -7,7 +7,7 @@ import click
 import json
 
 from p2a_impacts.resolver import resolve_rules
-from p2a_impacts.utils import get_region, REGIONS
+from p2a_impacts.utils import get_region, REGIONS, create_session
 
 
 @click.command()
@@ -16,7 +16,7 @@ from p2a_impacts.utils import get_region, REGIONS
     "-d",
     "--date-range",
     help="30 year period for data",
-    type=click.Choice(["2020", "2050", "2080"]),
+    type=click.Choice(["hist", "2020", "2050", "2080"]),
     default="2080",
 )
 @click.option(
@@ -36,7 +36,7 @@ from p2a_impacts.utils import get_region, REGIONS
     "-x",
     "--connection-string",
     help="Database connection string",
-    default="postgres://ce_meta_ro@db3.pcic.uvic.ca/ce_meta_12f290b63791",
+    default="postgresql://ce_meta_ro@db3.pcic.uvic.ca/ce_meta_12f290b63791",
 )
 @click.option(
     "-e", "--ensemble", help="Ensemble name filter for data files", default="p2a_rules",
@@ -59,9 +59,8 @@ def process(
     if not region:
         raise Exception("{} region was not found".format(region))
 
-    rules = resolve_rules(
-        csv, date_range, region, ensemble, connection_string, thredds, log_level,
-    )
+    sesh = create_session(connection_string)
+    rules = resolve_rules(csv, date_range, region, ensemble, sesh, thredds, log_level)
     json.dump(rules, sys.stdout)
 
 

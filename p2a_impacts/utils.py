@@ -1,6 +1,8 @@
 import requests
 import csv
 import logging
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 REGIONS = {
     "bc": "British Columbia",
@@ -103,3 +105,12 @@ def setup_logging(log_level):
     logger.addHandler(handler)
     logger.setLevel(getattr(logging, log_level))
     return logger
+
+
+def create_session(connection_string):
+    """Given a database connection URL, create a session object to be used
+    for resolve_rules.
+    """
+    Session = sessionmaker(create_engine(connection_string))
+    sesh = Session()
+    return sesh

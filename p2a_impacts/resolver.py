@@ -1,7 +1,4 @@
 from functools import partial
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-import logging
 
 from .parser import build_parse_tree
 from .evaluator import evaluate_rule
@@ -9,9 +6,7 @@ from .fetch_data import get_dict_val, read_csv, get_variables
 from .utils import setup_logging
 
 
-def resolve_rules(
-    csv, date_range, region, ensemble, connection_string, thredds, log_level="INFO"
-):
+def resolve_rules(csv, date_range, region, ensemble, sesh, thredds, log_level="INFO"):
     """Given a range of parameters run the rule engine
 
     This script controls the flow of the rule engine.  It is responsible for
@@ -54,8 +49,6 @@ def resolve_rules(
 
     # get values for all variables we will need for evaluation
     logger.info("Collecting variables")
-    Session = sessionmaker(create_engine(connection_string))
-    sesh = Session()
 
     # gather variable data
     collected_variables = {}

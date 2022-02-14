@@ -3,17 +3,13 @@ The purpose of this script is to collect all the /storage/ filepaths used by
 the p2a_impacts package.
 """
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import click
 
-from p2a_impacts.utils import get_region, REGIONS, setup_logging
+from p2a_impacts.utils import get_region, REGIONS, setup_logging, create_session
 from ce.api.util import search_for_unique_ids
 from modelmeta import DataFile
 from p2a_impacts.parser import build_parse_tree
-from p2a_impacts.evaluator import evaluate_rule
 from p2a_impacts.fetch_data import (
-    get_dict_val,
     read_csv,
     translate_args,
     get_models,
@@ -110,8 +106,7 @@ def file_collection(
                 variables[name] = values
 
     logger.info("Collecting variables")
-    Session = sessionmaker(create_engine(connection_string))
-    sesh = Session()
+    sesh = create_session(connection_string)
 
     # get file paths by date_range
     file_paths = set()
