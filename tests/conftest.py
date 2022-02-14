@@ -29,7 +29,7 @@ from .mock_data import geoserver_data, tasmin_data, tasmax_data
 def mock_thredds_url_root(monkeypatch):
     monkeypatch.setenv(
         "THREDDS_URL_ROOT",
-        "https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/dodsC/datasets",
+        "https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/fileServer/datasets",
     )
 
 
