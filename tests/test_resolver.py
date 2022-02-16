@@ -20,7 +20,7 @@ from p2a_impacts.utils import get_region
     ],
 )
 def test_resolve_rules_basic(
-    populateddb,
+    populateddb_thredds,
     mock_thredds_url_root,
     mock_urls,
     csv,
@@ -30,7 +30,7 @@ def test_resolve_rules_basic(
     ensemble,
     thredds,
 ):
-    sesh = populateddb.session
+    sesh = populateddb_thredds.session
     rules = resolve_rules(
         csv, date_range, get_region(region, geoserver), ensemble, sesh, thredds
     )
@@ -54,7 +54,7 @@ def test_resolve_rules_basic(
 )
 @pytest.mark.parametrize("date_range", ["2050", "2080"])
 def test_resolve_rules_multi_percentile(
-    populateddb,
+    populateddb_thredds,
     mock_thredds_url_root,
     csv,
     date_range,
@@ -63,7 +63,7 @@ def test_resolve_rules_multi_percentile(
     ensemble,
     thredds,
 ):
-    sesh = populateddb.session
+    sesh = populateddb_thredds.session
     rules = resolve_rules(
         csv, date_range, get_region(region, geoserver), ensemble, sesh, thredds
     )
@@ -91,7 +91,7 @@ def test_resolve_rules_multi_percentile(
     ],
 )
 def test_resolve_rules_multi_var(
-    populateddb,
+    populateddb_thredds,
     mock_thredds_url_root,
     csv,
     date_range,
@@ -100,9 +100,35 @@ def test_resolve_rules_multi_var(
     ensemble,
     thredds,
 ):
-    sesh = populateddb.session
+    sesh = populateddb_thredds.session
     rules = resolve_rules(
         csv, date_range, get_region(region, geoserver), ensemble, sesh, thredds
     )
     expected_rules = {"rule_shm": 65.807}
     assert round(rules["rule_shm"], 3) == expected_rules["rule_shm"]
+
+
+@pytest.mark.slow
+@pytest.mark.online
+@pytest.mark.parametrize(
+    ("csv", "date_range", "region", "geoserver", "ensemble", "thredds"),
+    [
+        (
+            resource_filename("tests", "data/rules-basic.csv"),
+            "hist",
+            "vancouver_island",
+            "http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows",
+            "p2a_rules",
+            False,
+        ),
+    ],
+)
+def test_resolve_rules_local(
+    populateddb_local, csv, date_range, region, geoserver, ensemble, thredds,
+):
+    sesh = populateddb_local.session
+    rules = resolve_rules(
+        csv, date_range, get_region(region, geoserver), ensemble, sesh, thredds
+    )
+    expected_rules = {"rule_snow": True, "rule_hybrid": True, "rule_rain": True}
+    assert rules == expected_rules

@@ -33,12 +33,12 @@ from p2a_impacts.utils import setup_logging
         ],
     ),
 )
-def test_get_paths_by_var(populateddb, ensemble, date, area, variables):
-    sesh = populateddb.session
+def test_get_paths_by_var(populateddb_local, ensemble, date, area, variables):
+    sesh = populateddb_local.session
     logger = setup_logging("ERROR")
 
     for name, values in variables.items():
         paths = get_paths_by_var(sesh, values, ensemble, date, area, False, logger)
 
     for path in paths:
-        assert "/ce/tests/data/" in path or "/storage/data/" in path
+        assert "p2a-rule-engine/tests/data/" in path
