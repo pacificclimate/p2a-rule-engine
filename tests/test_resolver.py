@@ -113,7 +113,6 @@ def test_resolve_rules_multi_var(
 
 
 @pytest.mark.slow
-@pytest.mark.online
 @pytest.mark.parametrize(
     ("csv", "date_range", "region", "geoserver", "ensemble", "thredds"),
     [
@@ -128,7 +127,7 @@ def test_resolve_rules_multi_var(
     ],
 )
 def test_resolve_rules_local(
-    populateddb_local, csv, date_range, region, geoserver, ensemble, thredds,
+    populateddb_local, mock_urls, csv, date_range, region, geoserver, ensemble, thredds,
 ):
     sesh = populateddb_local.session
     rules = resolve_rules(
