@@ -3,6 +3,8 @@ from pkg_resources import resource_filename
 
 from p2a_impacts.resolver import resolve_rules
 from p2a_impacts.utils import get_region
+
+import os
 import requests
 from .mock_data import tasmin_data
 
@@ -136,11 +138,11 @@ def test_resolve_rules_local(
     assert rules == expected_rules
 
 
-def test_mock_urls(mock_urls):
+def test_mock_urls(mock_thredds_url_root, mock_urls):
     assert (
         requests.get(
-            "https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/fileServer/datasets"
-            "/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/"
+            os.getenv("THREDDS_URL_ROOT")
+            + "/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/"
             "tasmin_sClimMean_anusplin_historical_19710101-20001231.nc"
         ).content
         == tasmin_data
