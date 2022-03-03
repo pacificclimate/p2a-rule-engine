@@ -17,7 +17,7 @@ def mock_opendap_request(path, mode="r"):
 
 
 @mock.patch("netCDF4.Dataset", side_effect=mock_opendap_request)
-def test_mock_opendap_request(mock_opendap_request):
+def test_mock_opendap_request(mock_opendap_request, mock_thredds_url_root):
     base_path_tasmin = "/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/tasmin_sClimMean_anusplin_historical_19710101-20001231.nc"
     dods_path_tasmin = os.getenv("THREDDS_URL_ROOT") + base_path_tasmin
     tasmin = netCDF4.Dataset(dods_path_tasmin)
