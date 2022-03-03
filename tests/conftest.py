@@ -587,24 +587,10 @@ def mock_urls(requests_mock):
     )
     requests_mock.register_uri(
         "GET",
-        "https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/dodsC/datasets"
-        "/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/"
-        "tasmin_sClimMean_anusplin_historical_19710101-20001231.nc",
-        content=tasmin_data,
-    )
-    requests_mock.register_uri(
-        "GET",
         "https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/fileServer/datasets"
         "/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/"
         "tasmin_sClimMean_anusplin_historical_19710101-20001231.nc",
         content=tasmin_data,
-    )
-    requests_mock.register_uri(
-        "GET",
-        "https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/dodsC/datasets"
-        "/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/"
-        "tasmax_sClimMean_anusplin_historical_19710101-20001231.nc",
-        content=tasmax_data,
     )
     requests_mock.register_uri(
         "GET",
