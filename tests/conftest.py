@@ -24,15 +24,80 @@ from flask_sqlalchemy import SQLAlchemy
 
 from .mock_data import geoserver_data, tasmin_data, tasmax_data
 
+# Objects used by both mock databases
 
-# Functions to create data for database
+# Ensembles
+
+p2a_rules = Ensemble(name="p2a_rules", version=1.0, changes="", description="")
+ensembles = [
+    p2a_rules,
+]
+
+# Emissions
+
+historical = Emission(short_name="historical")
+historical_rcp85 = Emission(short_name="historical,rcp85")
+
+# Runs
+
+run1 = Run(name="r1i1p1", emission=historical)
+run2 = Run(name="r1i1p1", emission=historical_rcp85)
+
+# Models
+
+anusplin = Model(short_name="anusplin", type="GCM", runs=[run1], organization="")
+canesm2 = Model(short_name="CanESM2", type="GCM", runs=[run2], organization="")
+
+# VariableAlias
+
+tasmin = VariableAlias(
+    long_name="Daily Minimum Temperature",
+    standard_name="air_temperature",
+    units="degC",
+)
+tasmax = VariableAlias(
+    long_name="Daily Maximum Temperature",
+    standard_name="air_temperature",
+    units="degC",
+)
+pr = VariableAlias(
+    long_name="Precipitation", standard_name="precipitation_flux", units="kg d-1 m-2",
+)
+flow_direction = VariableAlias(
+    long_name="Flow Direction", standard_name="flow_direction", units="1",
+)
+variable_aliases = [
+    tasmin,
+    tasmax,
+    pr,
+    flow_direction,
+]
+
+# Grids
+
+grid_anuspline = Grid(
+    name="Canada ANUSPLINE",
+    xc_grid_step=0.0833333,
+    yc_grid_step=0.0833333,
+    xc_origin=-140.958,
+    yc_origin=41.0417,
+    xc_count=1068,
+    yc_count=510,
+    xc_units="degrees_east",
+    yc_units="degrees_north",
+    evenly_spaced_y=True,
+)
+grids = [grid_anuspline]
+
+
+# Functions to create data for mock databases
 
 
 def make_data_file(
     filename=None, run=None,
 ):
     if not filename.startswith("/"):
-        filename = resource_filename("tests", "data/{}".format(filename))
+        filename = resource_filename("tests", f"data/{filename}")
     return DataFile(
         filename=filename,
         unique_id=filename,
@@ -41,6 +106,27 @@ def make_data_file(
         y_dim_name="lat",
         index_time=datetime.utcnow(),
         run=run,
+    )
+
+
+def make_data_file_variable(
+    file, cell_methods, var_name=None, grid=grid_anuspline,
+):
+    var_name_to_alias = {
+        "tasmin": tasmin,
+        "tasmax": tasmax,
+        "pr": pr,
+        "flow_direction": flow_direction,
+    }[var_name]
+
+    return DataFileVariableGridded(
+        file=file,
+        netcdf_variable_name=var_name,
+        range_min=0,
+        range_max=50,
+        variable_alias=var_name_to_alias,
+        grid=grid,
+        variable_cell_methods=cell_methods,
     )
 
 
@@ -64,19 +150,19 @@ def ce_response():
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def sessiondir(request,):
     dir = py.path.local(tempfile.mkdtemp())
     request.addfinalizer(lambda: dir.remove(rec=1))
     return dir
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def dsn(sessiondir,):
-    return "sqlite:///{}".format(sessiondir.join("test.sqlite").realpath())
+    return f"sqlite:///{sessiondir.join('test.sqlite').realpath()}"
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def app(dsn,):
     app = get_app()
     app.config["TESTING"] = True
@@ -85,7 +171,7 @@ def app(dsn,):
     return app
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def cleandb(app,):
     db = SQLAlchemy(app)
     metadata.create_all(bind=db.engine)
@@ -93,33 +179,12 @@ def cleandb(app,):
     return db
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def populateddb_thredds(cleandb,):
 
     populateable_db = cleandb
     sesh = populateable_db.session
 
-    # Ensembles
-
-    p2a_rules = Ensemble(name="p2a_rules", version=1.0, changes="", description="")
-    ensembles = [
-        p2a_rules,
-    ]
-
-    # Emissions
-
-    historical = Emission(short_name="historical")
-    historical_rcp85 = Emission(short_name="historical,rcp85")
-
-    # Runs
-
-    run1 = Run(name="r1i1p1", emission=historical)
-    run2 = Run(name="r1i1p1", emission=historical_rcp85)
-
-    # Models
-
-    anusplin = Model(short_name="anusplin", type="GCM", runs=[run1], organization="")
-    canesm2 = Model(short_name="CanESM2", type="GCM", runs=[run2], organization="")
     models = [anusplin, canesm2]
 
     # Data files
@@ -178,49 +243,6 @@ def populateddb_thredds(cleandb,):
     )
     data_files = [v for k, v in locals().items() if k.startswith("df")]
 
-    # VariableAlias
-
-    tasmin = VariableAlias(
-        long_name="Daily Minimum Temperature",
-        standard_name="air_temperature",
-        units="degC",
-    )
-    tasmax = VariableAlias(
-        long_name="Daily Maximum Temperature",
-        standard_name="air_temperature",
-        units="degC",
-    )
-    pr = VariableAlias(
-        long_name="Precipitation",
-        standard_name="precipitation_flux",
-        units="kg d-1 m-2",
-    )
-    flow_direction = VariableAlias(
-        long_name="Flow Direction", standard_name="flow_direction", units="1",
-    )
-    variable_aliases = [
-        tasmin,
-        tasmax,
-        pr,
-        flow_direction,
-    ]
-
-    # Grids
-
-    grid_anuspline = Grid(
-        name="Canada ANUSPLINE",
-        xc_grid_step=0.0833333,
-        yc_grid_step=0.0833333,
-        xc_origin=-140.958,
-        yc_origin=41.0417,
-        xc_count=1068,
-        yc_count=510,
-        xc_units="degrees_east",
-        yc_units="degrees_north",
-        evenly_spaced_y=True,
-    )
-    grids = [grid_anuspline]
-
     # Add all the above
 
     sesh.add_all(ensembles)
@@ -230,27 +252,7 @@ def populateddb_thredds(cleandb,):
     sesh.add_all(grids)
     sesh.flush()
 
-    # DataFileVariable
-
-    def make_data_file_variable(
-        file, cell_methods, var_name=None, grid=grid_anuspline,
-    ):
-        var_name_to_alias = {
-            "tasmin": tasmin,
-            "tasmax": tasmax,
-            "pr": pr,
-            "flow_direction": flow_direction,
-        }[var_name]
-
-        return DataFileVariableGridded(
-            file=file,
-            netcdf_variable_name=var_name,
-            range_min=0,
-            range_max=50,
-            variable_alias=var_name_to_alias,
-            grid=grid,
-            variable_cell_methods=cell_methods,
-        )
+    # DataFileVariables
 
     tmin_anusplin_seasonal = make_data_file_variable(
         df_anusplin_tasmin_seasonal,
@@ -415,30 +417,12 @@ def populateddb_thredds(cleandb,):
     return populateable_db
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def populateddb_local(cleandb,):
 
     populateable_db = cleandb
     sesh = populateable_db.session
 
-    # Ensembles
-
-    p2a_rules = Ensemble(name="p2a_rules", version=1.0, changes="", description="")
-    ensembles = [
-        p2a_rules,
-    ]
-
-    # Emissions
-
-    historical = Emission(short_name="historical")
-
-    # Runs
-
-    run1 = Run(name="r1i1p1", emission=historical)
-
-    # Models
-
-    anusplin = Model(short_name="anusplin", type="GCM", runs=[run1], organization="")
     models = [anusplin]
 
     # Data files
@@ -451,49 +435,6 @@ def populateddb_local(cleandb,):
     )
     data_files = [v for k, v in locals().items() if k.startswith("df")]
 
-    # VariableAlias
-
-    tasmin = VariableAlias(
-        long_name="Daily Minimum Temperature",
-        standard_name="air_temperature",
-        units="degC",
-    )
-    tasmax = VariableAlias(
-        long_name="Daily Maximum Temperature",
-        standard_name="air_temperature",
-        units="degC",
-    )
-    pr = VariableAlias(
-        long_name="Precipitation",
-        standard_name="precipitation_flux",
-        units="kg d-1 m-2",
-    )
-    flow_direction = VariableAlias(
-        long_name="Flow Direction", standard_name="flow_direction", units="1",
-    )
-    variable_aliases = [
-        tasmin,
-        tasmax,
-        pr,
-        flow_direction,
-    ]
-
-    # Grids
-
-    grid_anuspline = Grid(
-        name="Canada ANUSPLINE",
-        xc_grid_step=0.0833333,
-        yc_grid_step=0.0833333,
-        xc_origin=-140.958,
-        yc_origin=41.0417,
-        xc_count=1068,
-        yc_count=510,
-        xc_units="degrees_east",
-        yc_units="degrees_north",
-        evenly_spaced_y=True,
-    )
-    grids = [grid_anuspline]
-
     # Add all the above
 
     sesh.add_all(ensembles)
@@ -504,26 +445,6 @@ def populateddb_local(cleandb,):
     sesh.flush()
 
     # DataFileVariable
-
-    def make_data_file_variable(
-        file, cell_methods, var_name=None, grid=grid_anuspline,
-    ):
-        var_name_to_alias = {
-            "tasmin": tasmin,
-            "tasmax": tasmax,
-            "pr": pr,
-            "flow_direction": flow_direction,
-        }[var_name]
-
-        return DataFileVariableGridded(
-            file=file,
-            netcdf_variable_name=var_name,
-            range_min=0,
-            range_max=50,
-            variable_alias=var_name_to_alias,
-            grid=grid,
-            variable_cell_methods=cell_methods,
-        )
 
     tmin_anusplin_seasonal = make_data_file_variable(
         df_anusplin_tasmin_seasonal,
