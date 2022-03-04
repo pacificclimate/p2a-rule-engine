@@ -27,7 +27,6 @@ def test_mock_opendap_request(mock_opendap_request, mock_thredds_url_root):
     assert mock_opendap_request.call_count == 2
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     ("csv", "date_range", "region", "geoserver", "ensemble", "thredds"),
     [
@@ -132,7 +131,6 @@ def test_resolve_rules_multi_var(
     assert round(rules["rule_shm"], 3) == expected_rules["rule_shm"]
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     ("csv", "date_range", "region", "geoserver", "ensemble", "thredds"),
     [
