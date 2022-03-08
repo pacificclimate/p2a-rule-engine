@@ -25,59 +25,13 @@ from flask_sqlalchemy import SQLAlchemy
 from .mock_data import geoserver_data, tasmin_data, tasmax_data
 
 
-@pytest.fixture
-def mock_thredds_url_root(monkeypatch):
-    monkeypatch.setenv(
-        "THREDDS_URL_ROOT",
-        "https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/dodsC/datasets",
-    )
+# Functions to create data for mock databases
 
 
-@pytest.fixture(scope="function")
-def ce_response():
-    return {
-        "test_period_20100101-20391230": {"mean": 1, "min": 0, "max": 2},
-        "test_period_20400101-20691231": {"mean": 3, "min": 1, "max": 5},
-        "test_period_20700101-20991231": {"mean": 5, "min": 0, "max": 10},
-    }
+def create_modelmeta_objects():
+    """Create modelmeta objects used for both mock databases."""
 
-
-@pytest.fixture(scope="function")
-def sessiondir(request,):
-    dir = py.path.local(tempfile.mkdtemp())
-    request.addfinalizer(lambda: dir.remove(rec=1))
-    return dir
-
-
-@pytest.fixture(scope="function")
-def dsn(sessiondir,):
-    return "sqlite:///{}".format(sessiondir.join("test.sqlite").realpath())
-
-
-@pytest.fixture
-def app(dsn,):
-    app = get_app()
-    app.config["TESTING"] = True
-    app.config["SQLALCHEMY_DATABASE_URI"] = dsn
-    app.config["SQLALCHEMY_ECHO"] = False
-    return app
-
-
-@pytest.fixture
-def cleandb(app,):
-    db = SQLAlchemy(app)
-    metadata.create_all(bind=db.engine)
-    db.create_all()
-    return db
-
-
-@pytest.fixture
-def populateddb(cleandb,):
-
-    now = datetime.utcnow()
-
-    populateable_db = cleandb
-    sesh = populateable_db.session
+    objects = {}
 
     # Ensembles
 
@@ -85,99 +39,28 @@ def populateddb(cleandb,):
     ensembles = [
         p2a_rules,
     ]
+    objects["ensembles"] = ensembles
 
     # Emissions
+
     historical = Emission(short_name="historical")
     historical_rcp85 = Emission(short_name="historical,rcp85")
 
     # Runs
+
     run1 = Run(name="r1i1p1", emission=historical)
     run2 = Run(name="r1i1p1", emission=historical_rcp85)
+    objects["run1"] = run1
+    objects["run2"] = run2
 
     # Models
 
-    bnu = Model(short_name="BNU-ESM", type="GCM", runs=[run1], organization="BNU")
     anusplin = Model(short_name="anusplin", type="GCM", runs=[run1], organization="")
     canesm2 = Model(short_name="CanESM2", type="GCM", runs=[run2], organization="")
-    models = [bnu, anusplin, canesm2]
+    objects["anusplin"] = anusplin
+    objects["canesm2"] = canesm2
 
-    # Data files
-
-    def make_data_file(
-        filename=None, run=None,
-    ):
-        if not filename.startswith("/"):
-            filename = resource_filename("ce", "tests/data/{}".format(filename))
-        return DataFile(
-            filename=filename,
-            unique_id=filename,
-            first_1mib_md5sum="xxxx",
-            x_dim_name="lon",
-            y_dim_name="lat",
-            index_time=now,
-            run=run,
-        )
-
-    df_bnu_seasonal = make_data_file(
-        filename="tasmin_sClim_BNU-ESM_historical_r1i1p1_19650101-19701230.nc",
-        run=run1,
-    )  # Only local file (only used to test file collector). All other files from THREDDS.
-
-    storage_root_anusplin = (
-        "/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/"
-    )
-    storage_root_canesm2 = "/storage/data/projects/comp_support/climate_explorer_data_prep/climatological_means/downscale/output/"
-    canesm2_tasmin_root = storage_root_canesm2 + "2433/"
-    canesm2_tasmax_root = storage_root_canesm2 + "2495/"
-
-    df_anusplin_tasmin_seasonal = make_data_file(
-        filename=storage_root_anusplin
-        + "tasmin_sClimMean_anusplin_historical_19710101-20001231.nc",
-        run=run1,
-    )
-    df_anusplin_tasmax_seasonal = make_data_file(
-        filename=storage_root_anusplin
-        + "tasmax_sClimMean_anusplin_historical_19710101-20001231.nc",
-        run=run1,
-    )
-    df_anusplin_tasmin_mon = make_data_file(
-        filename=storage_root_anusplin
-        + "tasmin_mClimMean_anusplin_historical_19710101-20001231.nc",
-        run=run1,
-    )
-    df_anusplin_tasmax_mon = make_data_file(
-        filename=storage_root_anusplin
-        + "tasmax_mClimMean_anusplin_historical_19710101-20001231.nc",
-        run=run1,
-    )
-    df_anusplin_pr_seasonal = make_data_file(
-        filename=storage_root_anusplin
-        + "pr_sClimMean_anusplin_historical_19710101-20001231.nc",
-        run=run1,
-    )
-    df_canesm2_tasmin_2050_seasonal = make_data_file(
-        filename=canesm2_tasmin_root
-        + "tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada.nc",
-        run=run2,
-    )
-    df_canesm2_tasmax_2050_seasonal = make_data_file(
-        filename=canesm2_tasmax_root
-        + "tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada.nc",
-        run=run2,
-    )
-    df_canesm2_tasmin_2080_seasonal = make_data_file(
-        filename=canesm2_tasmin_root
-        + "tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada.nc",
-        run=run2,
-    )
-    df_canesm2_tasmax_2080_seasonal = make_data_file(
-        filename=canesm2_tasmax_root
-        + "tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada.nc",
-        run=run2,
-    )
-    data_files = [v for k, v in locals().items() if k.startswith("df")]
-
-    # VariableAlias
+    # VariableAliases
 
     tasmin = VariableAlias(
         long_name="Daily Minimum Temperature",
@@ -203,6 +86,7 @@ def populateddb(cleandb,):
         pr,
         flow_direction,
     ]
+    objects["variable_aliases"] = variable_aliases
 
     # Grids
 
@@ -219,84 +103,239 @@ def populateddb(cleandb,):
         evenly_spaced_y=True,
     )
     grids = [grid_anuspline]
+    objects["grids"] = grids
+
+    return objects
+
+
+def make_data_file(
+    filename=None, run=None,
+):
+    if not filename.startswith("/"):
+        filename = resource_filename("tests", f"data/{filename}")
+    return DataFile(
+        filename=filename,
+        unique_id=filename,
+        first_1mib_md5sum="xxxx",
+        x_dim_name="lon",
+        y_dim_name="lat",
+        index_time=datetime.utcnow(),
+        run=run,
+    )
+
+
+def make_data_file_variable(
+    file, cell_methods, variable_aliases, var_name=None, grid=None,
+):
+    (tasmin, tasmax, pr, flow_direction) = variable_aliases[:]
+    var_name_to_alias = {
+        "tasmin": tasmin,
+        "tasmax": tasmax,
+        "pr": pr,
+        "flow_direction": flow_direction,
+    }[var_name]
+
+    return DataFileVariableGridded(
+        file=file,
+        netcdf_variable_name=var_name,
+        range_min=0,
+        range_max=50,
+        variable_alias=var_name_to_alias,
+        grid=grid,
+        variable_cell_methods=cell_methods,
+    )
+
+
+# Fixtures
+
+
+@pytest.fixture
+def mock_thredds_url_root(monkeypatch):
+    monkeypatch.setenv(
+        "THREDDS_URL_ROOT",
+        "https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/dodsC/datasets",
+    )
+
+
+@pytest.fixture(scope="function")
+def ce_response():
+    return {
+        "test_period_20100101-20391230": {"mean": 1, "min": 0, "max": 2},
+        "test_period_20400101-20691231": {"mean": 3, "min": 1, "max": 5},
+        "test_period_20700101-20991231": {"mean": 5, "min": 0, "max": 10},
+    }
+
+
+@pytest.fixture()
+def sessiondir(request,):
+    dir = py.path.local(tempfile.mkdtemp())
+    request.addfinalizer(lambda: dir.remove(rec=1))
+    return dir
+
+
+@pytest.fixture()
+def dsn(sessiondir,):
+    return f"sqlite:///{sessiondir.join('test.sqlite').realpath()}"
+
+
+@pytest.fixture()
+def app(dsn,):
+    app = get_app()
+    app.config["TESTING"] = True
+    app.config["SQLALCHEMY_DATABASE_URI"] = dsn
+    app.config["SQLALCHEMY_ECHO"] = False
+    return app
+
+
+@pytest.fixture()
+def cleandb(app,):
+    db = SQLAlchemy(app)
+    metadata.create_all(bind=db.engine)
+    db.create_all()
+    return db
+
+
+@pytest.fixture()
+def populateddb_thredds(cleandb,):
+    """Create mock database only containing data files from THREDDS."""
+
+    populateable_db = cleandb
+    sesh = populateable_db.session
+    objects = create_modelmeta_objects()
+    p2a_rules = objects["ensembles"][0]
+    grid_anuspline = objects["grids"][0]
+
+    models = [objects["anusplin"], objects["canesm2"]]
+
+    # Data files
+
+    storage_root_anusplin = (
+        "/storage/data/climate/downscale/BCCAQ2/ANUSPLIN/climatologies/"
+    )
+    storage_root_canesm2 = "/storage/data/projects/comp_support/climate_explorer_data_prep/climatological_means/downscale/output/"
+    canesm2_tasmin_root = storage_root_canesm2 + "2433/"
+    canesm2_tasmax_root = storage_root_canesm2 + "2495/"
+
+    df_anusplin_tasmin_seasonal = make_data_file(
+        filename=storage_root_anusplin
+        + "tasmin_sClimMean_anusplin_historical_19710101-20001231.nc",
+        run=objects["run1"],
+    )
+    df_anusplin_tasmax_seasonal = make_data_file(
+        filename=storage_root_anusplin
+        + "tasmax_sClimMean_anusplin_historical_19710101-20001231.nc",
+        run=objects["run1"],
+    )
+    df_anusplin_tasmin_mon = make_data_file(
+        filename=storage_root_anusplin
+        + "tasmin_mClimMean_anusplin_historical_19710101-20001231.nc",
+        run=objects["run1"],
+    )
+    df_anusplin_tasmax_mon = make_data_file(
+        filename=storage_root_anusplin
+        + "tasmax_mClimMean_anusplin_historical_19710101-20001231.nc",
+        run=objects["run1"],
+    )
+    df_anusplin_pr_seasonal = make_data_file(
+        filename=storage_root_anusplin
+        + "pr_sClimMean_anusplin_historical_19710101-20001231.nc",
+        run=objects["run1"],
+    )
+    df_canesm2_tasmin_2050_seasonal = make_data_file(
+        filename=canesm2_tasmin_root
+        + "tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada.nc",
+        run=objects["run2"],
+    )
+    df_canesm2_tasmax_2050_seasonal = make_data_file(
+        filename=canesm2_tasmax_root
+        + "tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20400101-20691231_Canada.nc",
+        run=objects["run2"],
+    )
+    df_canesm2_tasmin_2080_seasonal = make_data_file(
+        filename=canesm2_tasmin_root
+        + "tasmin_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada.nc",
+        run=objects["run2"],
+    )
+    df_canesm2_tasmax_2080_seasonal = make_data_file(
+        filename=canesm2_tasmax_root
+        + "tasmax_sClim_BCCAQv2_CanESM2_historical+rcp85_r1i1p1_20700101-20991231_Canada.nc",
+        run=objects["run2"],
+    )
+    data_files = [v for k, v in locals().items() if k.startswith("df")]
 
     # Add all the above
 
-    sesh.add_all(ensembles)
+    sesh.add_all(objects["ensembles"])
     sesh.add_all(models)
     sesh.add_all(data_files)
-    sesh.add_all(variable_aliases)
-    sesh.add_all(grids)
+    sesh.add_all(objects["variable_aliases"])
+    sesh.add_all(objects["grids"])
     sesh.flush()
 
-    # DataFileVariable
+    # DataFileVariables
 
-    def make_data_file_variable(
-        file, cell_methods, var_name=None, grid=grid_anuspline,
-    ):
-        var_name_to_alias = {
-            "tasmin": tasmin,
-            "tasmax": tasmax,
-            "pr": pr,
-            "flow_direction": flow_direction,
-        }[var_name]
-        return DataFileVariableGridded(
-            file=file,
-            netcdf_variable_name=var_name,
-            range_min=0,
-            range_max=50,
-            variable_alias=var_name_to_alias,
-            grid=grid,
-            variable_cell_methods=cell_methods,
-        )
-
-    tmax_bnu = make_data_file_variable(
-        df_bnu_seasonal, cell_methods="time: maximum", var_name="tasmin",
-    )
     tmin_anusplin_seasonal = make_data_file_variable(
         df_anusplin_tasmin_seasonal,
         cell_methods="time: minimum time: mean over days",
+        variable_aliases=objects["variable_aliases"],
         var_name="tasmin",
+        grid=grid_anuspline,
     )
     tmax_anusplin_seasonal = make_data_file_variable(
         df_anusplin_tasmax_seasonal,
         cell_methods="time: maximum time: mean over days",
+        variable_aliases=objects["variable_aliases"],
         var_name="tasmax",
+        grid=grid_anuspline,
     )
     tmin_anusplin_mon = make_data_file_variable(
         df_anusplin_tasmin_mon,
         cell_methods="time: minimum time: mean over days",
+        variable_aliases=objects["variable_aliases"],
         var_name="tasmin",
+        grid=grid_anuspline,
     )
     tmax_anusplin_mon = make_data_file_variable(
         df_anusplin_tasmax_mon,
         cell_methods="time: minimum time: mean over days",
+        variable_aliases=objects["variable_aliases"],
         var_name="tasmax",
+        grid=grid_anuspline,
     )
     pr_anusplin = make_data_file_variable(
         df_anusplin_pr_seasonal,
         cell_methods="time: mean time: mean over days",
+        variable_aliases=objects["variable_aliases"],
         var_name="pr",
+        grid=grid_anuspline,
     )
     tmin_canesm2_2050 = make_data_file_variable(
         df_canesm2_tasmin_2050_seasonal,
         cell_methods="time: minimum",
+        variable_aliases=objects["variable_aliases"],
         var_name="tasmin",
+        grid=objects["grids"][0],
     )
     tmax_canesm2_2050 = make_data_file_variable(
         df_canesm2_tasmax_2050_seasonal,
         cell_methods="time: maximum",
+        variable_aliases=objects["variable_aliases"],
         var_name="tasmax",
+        grid=grid_anuspline,
     )
     tmin_canesm2_2080 = make_data_file_variable(
         df_canesm2_tasmin_2080_seasonal,
         cell_methods="time: minimum",
+        variable_aliases=objects["variable_aliases"],
         var_name="tasmin",
+        grid=grid_anuspline,
     )
     tmax_canesm2_2080 = make_data_file_variable(
         df_canesm2_tasmax_2080_seasonal,
         cell_methods="time: maximum",
+        variable_aliases=objects["variable_aliases"],
         var_name="tasmax",
+        grid=grid_anuspline,
     )
     var_names = ("tmin", "tmax")
     data_file_variables = [
@@ -397,7 +436,6 @@ def populateddb(cleandb,):
         ],
     )
     ts_hist_seasonal.files = [
-        df_bnu_seasonal,
         df_anusplin_tasmin_seasonal,
         df_anusplin_tasmax_seasonal,
         df_anusplin_pr_seasonal,
@@ -410,6 +448,98 @@ def populateddb(cleandb,):
     ts_2080_seasonal.files = [
         df_canesm2_tasmin_2080_seasonal,
         df_canesm2_tasmax_2080_seasonal,
+    ]
+    sesh.add_all(sesh.dirty)
+
+    sesh.commit()
+    return populateable_db
+
+
+@pytest.fixture()
+def populateddb_local(cleandb,):
+    """Create mock database only containing data files in this repository."""
+
+    populateable_db = cleandb
+    sesh = populateable_db.session
+    objects = create_modelmeta_objects()
+    p2a_rules = objects["ensembles"][0]
+    grid_anuspline = objects["grids"][0]
+
+    models = [objects["anusplin"]]
+
+    # Data files
+
+    df_anusplin_tasmin_seasonal = make_data_file(
+        filename="tasmin_sClimMean_anusplin_historical_19710101-20001231.nc",
+        run=objects["run1"],
+    )
+    df_anusplin_tasmax_seasonal = make_data_file(
+        filename="tasmax_sClimMean_anusplin_historical_19710101-20001231.nc",
+        run=objects["run1"],
+    )
+    data_files = [v for k, v in locals().items() if k.startswith("df")]
+
+    # Add all the above
+
+    sesh.add_all(objects["ensembles"])
+    sesh.add_all(models)
+    sesh.add_all(data_files)
+    sesh.add_all(objects["variable_aliases"])
+    sesh.add_all(objects["grids"])
+    sesh.flush()
+
+    # DataFileVariables
+
+    tmin_anusplin_seasonal = make_data_file_variable(
+        df_anusplin_tasmin_seasonal,
+        cell_methods="time: minimum time: mean over days",
+        variable_aliases=objects["variable_aliases"],
+        var_name="tasmin",
+        grid=grid_anuspline,
+    )
+    tmax_anusplin_seasonal = make_data_file_variable(
+        df_anusplin_tasmax_seasonal,
+        cell_methods="time: maximum time: mean over days",
+        variable_aliases=objects["variable_aliases"],
+        var_name="tasmax",
+        grid=grid_anuspline,
+    )
+    var_names = ("tmin", "tmax")
+    data_file_variables = [v for k, v in locals().items() if k.startswith(var_names)]
+
+    sesh.add_all(data_file_variables)
+    sesh.flush()
+
+    # Associate to Ensembles
+
+    for dfv in data_file_variables:
+        p2a_rules.data_file_variables.append(dfv)
+    sesh.add_all(sesh.dirty)
+
+    # TimeSets
+
+    ts_hist_seasonal = TimeSet(
+        calendar="standard",
+        start_date=datetime(1971, 1, 1),
+        end_date=datetime(2000, 12, 31),
+        multi_year_mean=True,
+        num_times=4,
+        time_resolution="seasonal",
+        times=[
+            Time(time_idx=i, timestep=datetime(1986, 3 * i + 1, 16)) for i in range(4)
+        ],
+        climatological_times=[
+            ClimatologicalTime(
+                time_idx=i,
+                time_start=datetime(1971, 3 * i + 1, 1) - relativedelta(months=1),
+                time_end=datetime(2000, 3 * i + 1, 1) + relativedelta(months=2),
+            )
+            for i in range(4)
+        ],
+    )
+    ts_hist_seasonal.files = [
+        df_anusplin_tasmin_seasonal,
+        df_anusplin_tasmax_seasonal,
     ]
     sesh.add_all(sesh.dirty)
 
