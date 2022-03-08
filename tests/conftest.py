@@ -29,7 +29,7 @@ from .mock_data import geoserver_data, tasmin_data, tasmax_data
 
 
 def create_modelmeta_objects():
-    """Create modelmeta objects used for both mock databases"""
+    """Create modelmeta objects used for both mock databases."""
 
     objects = {}
 
@@ -127,11 +127,12 @@ def make_data_file(
 def make_data_file_variable(
     file, cell_methods, variable_aliases, var_name=None, grid=None,
 ):
+    (tasmin, tasmax, pr, flow_direction) = variable_aliases[:]
     var_name_to_alias = {
-        "tasmin": variable_aliases[0],
-        "tasmax": variable_aliases[1],
-        "pr": variable_aliases[2],
-        "flow_direction": variable_aliases[3],
+        "tasmin": tasmin,
+        "tasmax": tasmax,
+        "pr": pr,
+        "flow_direction": flow_direction,
     }[var_name]
 
     return DataFileVariableGridded(
@@ -196,10 +197,13 @@ def cleandb(app,):
 
 @pytest.fixture()
 def populateddb_thredds(cleandb,):
+    """Create mock database only containing data files from THREDDS."""
 
     populateable_db = cleandb
     sesh = populateable_db.session
     objects = create_modelmeta_objects()
+    p2a_rules = objects["ensembles"][0]
+    grid_anuspline = objects["grids"][0]
 
     models = [objects["anusplin"], objects["canesm2"]]
 
@@ -275,35 +279,35 @@ def populateddb_thredds(cleandb,):
         cell_methods="time: minimum time: mean over days",
         variable_aliases=objects["variable_aliases"],
         var_name="tasmin",
-        grid=objects["grids"][0],
+        grid=grid_anuspline,
     )
     tmax_anusplin_seasonal = make_data_file_variable(
         df_anusplin_tasmax_seasonal,
         cell_methods="time: maximum time: mean over days",
         variable_aliases=objects["variable_aliases"],
         var_name="tasmax",
-        grid=objects["grids"][0],
+        grid=grid_anuspline,
     )
     tmin_anusplin_mon = make_data_file_variable(
         df_anusplin_tasmin_mon,
         cell_methods="time: minimum time: mean over days",
         variable_aliases=objects["variable_aliases"],
         var_name="tasmin",
-        grid=objects["grids"][0],
+        grid=grid_anuspline,
     )
     tmax_anusplin_mon = make_data_file_variable(
         df_anusplin_tasmax_mon,
         cell_methods="time: minimum time: mean over days",
         variable_aliases=objects["variable_aliases"],
         var_name="tasmax",
-        grid=objects["grids"][0],
+        grid=grid_anuspline,
     )
     pr_anusplin = make_data_file_variable(
         df_anusplin_pr_seasonal,
         cell_methods="time: mean time: mean over days",
         variable_aliases=objects["variable_aliases"],
         var_name="pr",
-        grid=objects["grids"][0],
+        grid=grid_anuspline,
     )
     tmin_canesm2_2050 = make_data_file_variable(
         df_canesm2_tasmin_2050_seasonal,
@@ -317,21 +321,21 @@ def populateddb_thredds(cleandb,):
         cell_methods="time: maximum",
         variable_aliases=objects["variable_aliases"],
         var_name="tasmax",
-        grid=objects["grids"][0],
+        grid=grid_anuspline,
     )
     tmin_canesm2_2080 = make_data_file_variable(
         df_canesm2_tasmin_2080_seasonal,
         cell_methods="time: minimum",
         variable_aliases=objects["variable_aliases"],
         var_name="tasmin",
-        grid=objects["grids"][0],
+        grid=grid_anuspline,
     )
     tmax_canesm2_2080 = make_data_file_variable(
         df_canesm2_tasmax_2080_seasonal,
         cell_methods="time: maximum",
         variable_aliases=objects["variable_aliases"],
         var_name="tasmax",
-        grid=objects["grids"][0],
+        grid=grid_anuspline,
     )
     var_names = ("tmin", "tmax")
     data_file_variables = [
@@ -344,7 +348,7 @@ def populateddb_thredds(cleandb,):
     # Associate to Ensembles
 
     for dfv in data_file_variables:
-        objects["ensembles"][0].data_file_variables.append(dfv)
+        p2a_rules.data_file_variables.append(dfv)
     sesh.add_all(sesh.dirty)
 
     # TimeSets
@@ -453,10 +457,13 @@ def populateddb_thredds(cleandb,):
 
 @pytest.fixture()
 def populateddb_local(cleandb,):
+    """Create mock database only containing data files in this repository."""
 
     populateable_db = cleandb
     sesh = populateable_db.session
     objects = create_modelmeta_objects()
+    p2a_rules = objects["ensembles"][0]
+    grid_anuspline = objects["grids"][0]
 
     models = [objects["anusplin"]]
 
@@ -481,21 +488,21 @@ def populateddb_local(cleandb,):
     sesh.add_all(objects["grids"])
     sesh.flush()
 
-    # DataFileVariable
+    # DataFileVariables
 
     tmin_anusplin_seasonal = make_data_file_variable(
         df_anusplin_tasmin_seasonal,
         cell_methods="time: minimum time: mean over days",
         variable_aliases=objects["variable_aliases"],
         var_name="tasmin",
-        grid=objects["grids"][0],
+        grid=grid_anuspline,
     )
     tmax_anusplin_seasonal = make_data_file_variable(
         df_anusplin_tasmax_seasonal,
         cell_methods="time: maximum time: mean over days",
         variable_aliases=objects["variable_aliases"],
         var_name="tasmax",
-        grid=objects["grids"][0],
+        grid=grid_anuspline,
     )
     var_names = ("tmin", "tmax")
     data_file_variables = [v for k, v in locals().items() if k.startswith(var_names)]
@@ -506,7 +513,7 @@ def populateddb_local(cleandb,):
     # Associate to Ensembles
 
     for dfv in data_file_variables:
-        objects["ensembles"][0].data_file_variables.append(dfv)
+        p2a_rules.data_file_variables.append(dfv)
     sesh.add_all(sesh.dirty)
 
     # TimeSets
