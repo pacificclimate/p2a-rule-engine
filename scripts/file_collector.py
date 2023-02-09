@@ -175,7 +175,7 @@ def query_files(sesh, model, query_args):
             time=query_args["time"],
             variable=var,
             timescale=query_args["timescale"],
-            cell_method=query_args["cell_method"],
+            climatological_statistic=query_args["cell_method"],
         )
         for var in query_args["variable"]
     ]
