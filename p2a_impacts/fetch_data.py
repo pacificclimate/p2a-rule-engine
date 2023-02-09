@@ -117,7 +117,7 @@ def query_backend(sesh, model, query_args):
                 area=query_args["area"],
                 variable=var,
                 timescale=query_args["timescale"],
-                cell_method=query_args["cell_method"],
+                climatological_statistic=query_args["cell_method"],
                 is_thredds=query_args["thredds"],
             ),
         )
