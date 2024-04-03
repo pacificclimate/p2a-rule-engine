@@ -6,7 +6,7 @@ import logging
 from ce.api.models import models
 from ce.api.multistats import multistats
 
-
+csv.field_size_limit(1_000_000)
 logger = logging.getLogger("scripts")
 
 
@@ -127,7 +127,7 @@ def query_backend(sesh, model, query_args):
 
 def get_models(sesh, hist_var, ensemble):
     """Return a list of models needed to compute the percentile"""
-    historical_baseline = "anusplin"
+    historical_baseline = "PCIC_BLEND_v1"
     if hist_var == "hist":
         return [historical_baseline]
     else:
@@ -149,8 +149,8 @@ translate_variable = translate_names(
         "temp": ["tasmin", "tasmax"],
         "prec": ["pr"],
         "dg05": ["gdd"],
-        "nffd": ["fdETCCDI"],
-        "pass": ["prsn"],
+        "nffd": ["ffd"],
+        "pass": ["snow"],
         "dl18": ["hdd"],
     }
 )
@@ -224,9 +224,8 @@ def translate_emission(percentile, variable):
     equivalent emission.
     """
     emissions = {
-        ("temp", "prec", "dg05", "pass", "dl18"): "historical,rcp85",
-        ("nffd"): "historical, rcp85",
-        ("hist"): "",  # historical has no emission scenario
+        ("temp", "prec", "dg05", "pass", "dl18", "nffd"): "historical,ssp585",
+        ("hist"): "historical",  # historical has no emission scenario
     }
 
     if percentile == "hist":
@@ -242,10 +241,10 @@ def translate_date(percentile, date_range):
     equivalent dates.
     """
     dates = {
-        "hist": ["19610101-19901231", "19710101-20001231"],
-        "2020": ["20100101-20391231", "20110101-20400101", "20100101-20391230"],
-        "2050": ["20400101-20691231", "20410101-20700101", "20400101-20691230"],
-        "2080": ["20700101-20991231", "20710101-21000101", "20700101-20991230"],
+        "hist": ["19810101-20101231"],
+        "2030": ["20210101-20501231"],
+        "2050": ["20410101-20701231"],
+        "2080": ["20710101-21001231"],
     }
 
     if percentile == "hist":
