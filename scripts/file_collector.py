@@ -24,8 +24,8 @@ from p2a_impacts.fetch_data import (
     "-d",
     "--date-range",
     help="30 year period for data",
-    default=["2020", "2050", "2080"],
-    type=click.Choice(["2020", "2050", "2080"]),
+    default=["2030", "2050", "2080"],
+    type=click.Choice(["2030", "2050", "2080"]),
     multiple=True,
 )
 @click.option(
@@ -39,7 +39,7 @@ from p2a_impacts.fetch_data import (
     "-u",
     "--url",
     help="Geoserver URL",
-    default="http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows",
+    default="https://beehive.pacificclimate.org/plan2adapt/bc_regions/ows",
 )
 @click.option(
     "-x",

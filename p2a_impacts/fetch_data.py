@@ -127,6 +127,7 @@ def query_backend(sesh, model, query_args):
 
 def get_models(sesh, hist_var, ensemble):
     """Return a list of models needed to compute the percentile"""
+    logger.info(f"in get_models with hist_var'{hist_var}' and ensemble {ensemble}.")
     historical_baseline = "PCIC_BLEND_v1"
     if hist_var == "hist":
         return [historical_baseline]

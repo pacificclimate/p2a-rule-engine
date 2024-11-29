@@ -1,8 +1,10 @@
 import requests
 import csv
 import logging
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+logger = logging.getLogger("scripts")
 
 csv.field_size_limit(1_000_000)
 
@@ -132,11 +134,16 @@ def get_region(region_name, url):
     decoded_data = data.content.decode("utf-8")
     csv_data = csv.DictReader(decoded_data.splitlines(), delimiter=",")
 
-    region = REGIONS[region_name]
+    region = REGIONS.get(region_name)
+    if region is None:
+        logger.error(f"{region_name} is not a valid region name.")
+        return None
 
     for row in csv_data:
         if row["english_na"] == region:
-            return row
+            # A temp workaround to get the second Cariboo regions using group name.
+            # if (region == 'Cariboo' or region == 'Kootenay / Boundary')  and row["group"] == 'Forestry Regions':
+                return row
 
 
 def setup_logging(log_level):
