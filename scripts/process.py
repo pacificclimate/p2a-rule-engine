@@ -31,7 +31,7 @@ from p2a_impacts.utils import get_region, REGIONS, create_session
     "-u",
     "--url",
     help="Geoserver URL",
-    default="http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows",
+    default="https://beehive.pacificclimate.org/geoserver/bc_regions/ows",
 )
 @click.option(
     "-x",

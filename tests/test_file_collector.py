@@ -34,7 +34,7 @@ from p2a_impacts.utils import setup_logging
     ),
 )
 def test_get_paths_by_var(populateddb_local, ensemble, date, area, variables):
-    sesh = populateddb_local.session
+    sesh = populateddb_local
     logger = setup_logging("ERROR")
 
     for name, values in variables.items():

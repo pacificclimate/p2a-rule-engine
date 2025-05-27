@@ -63,7 +63,7 @@ To run the rule engine and view the results use `process.py` script.
 
 If you wish to use the `--thredds` option please set the appropriate env variable:
 ```
-export THREDDS_URL_ROOT=https://docker-dev03.pcic.uvic.ca/twitcher/ows/proxy/thredds/dodsC/datasets
+export THREDDS_URL_ROOT=https://marble-dev01.pcic.uvic.ca/twitcher/ows/proxy/thredds/dodsC/datasets
 ```
 
 ### Program Flow

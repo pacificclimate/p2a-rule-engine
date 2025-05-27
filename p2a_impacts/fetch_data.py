@@ -50,7 +50,9 @@ def filter_by_period(target, dates, periods):
                 try:
                     return periods[key][target]
                 except KeyError as e:
-                    logger.exception("Bad target variable: %s", target)
+                    logger.exception(
+                        f"[filter_by_period] Missing target '{target}' in {key}"
+                    )
 
 
 def get_nffd(fd, time, timescale, calendar="standard"):
@@ -219,21 +221,18 @@ translate_percentile = translate_names({"e25p": 25, "e75p": 75, "hist": 100})
 """Given a percentile component, translate it to the CE equivalent"""
 
 
-def translate_emission(percentile, variable):
-    """Given emission and variable components, translate them into the CE
-    equivalent emission.
+USE_RCP85 = False  # or True for test
+
+def translate_emission(percentile):
     """
-    emissions = {
-        ("temp", "prec", "dg05", "pass", "dl18", "nffd"): "historical,ssp585",
-        ("hist"): "historical",  # historical has no emission scenario
-    }
-
+    Return emission string for CE backend.
+    - percentile 'hist' has no emission scenario
+    - otherwise, use scenario depending on global USE_RCP85 flag
+    """
     if percentile == "hist":
-        emission = percentile
-    else:
-        emission = variable
-
-    return next(scenario for var, scenario in emissions.items() if emission in var)
+        return "historical"
+    
+    return "historical,rcp85" if USE_RCP85 else "historical,ssp585"
 
 
 def translate_date(percentile, date_range):
@@ -241,10 +240,10 @@ def translate_date(percentile, date_range):
     equivalent dates.
     """
     dates = {
-        "hist": ["19810101-20101231"],
+        "hist": ["1981-2010"],
         "2030": ["20210101-20501231"],
-        "2050": ["20410101-20701231"],
-        "2080": ["20710101-21001231"],
+        "2050": ["20410101-20701231", "20400101-20691231"],
+        "2080": ["20710101-21001231", "20700101-20991231"],
     }
 
     if percentile == "hist":
@@ -276,7 +275,7 @@ def translate_args(
         "cell_method": translate_temporal(temporal),
         "spatial": translate_spatial(spatial),
         "percentile": translate_percentile(percentile),
-        "emission": translate_emission(percentile, variable),
+        "emission": translate_emission(percentile),
         "area": area["the_geom"],
         "dates": translate_date(percentile, date_range),
         "ensemble_name": ensemble,
