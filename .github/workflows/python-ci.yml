@@ -11,25 +11,43 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-dev \
+            libpq-dev \
+            libhdf5-dev \
+            libnetcdf-dev \
+            gdal-bin \
+            libgdal-dev \
+            libproj-dev \
+            proj-data \
+            libgeos-dev
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry --version
+
+      - name: Install project dependencies (including test extras)
         env:
-          PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
           CPLUS_INCLUDE_PATH: /usr/include/gdal
           C_INCLUDE_PATH: /usr/include/gdal
-        run: |
-          make ci
+        run: poetry install --extras "test"
+
       - name: Test with pytest (full)
         if: github.ref == 'refs/heads/master'
-        run: |
-          py.test tests/ -m "not online" --cov --cov-report term-missing
+        run: poetry run pytest tests/ -m "not online" --cov --cov-report term-missing
+
       - name: Test with pytest (fast)
         if: github.ref != 'refs/heads/master'
-        run: |
-          py.test -m "not slow and not online"
-      - name: Code format check
-        run: |
-          black . --check
+        run: poetry run pytest -m "not slow and not online"

@@ -11,14 +11,21 @@ authors = [{ name = "Nikola Rados", email = "nrados@uvic.ca" }]
 license = { text = "GNU General Public License v3 (GPLv3)" }
 readme = "README.md"
 classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
 
 requires-python = ">=3.10, <4"
 dependencies = [
   "ce @ git+https://github.com/pacificclimate/climate-explorer-backend.git@py-sprint-25q1",
+  "GDAL>=3.3.0,<3.4",
   "cf_cell_methods>=0.1.0,<1.0.0",
   "contexttimer>=0.3.3,<1.0.0",
   "setuptools>=80.8.0,<81.0.0",
