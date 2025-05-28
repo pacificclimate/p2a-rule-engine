@@ -223,6 +223,7 @@ translate_percentile = translate_names({"e25p": 25, "e75p": 75, "hist": 100})
 
 USE_RCP85 = False  # or True for test
 
+
 def translate_emission(percentile):
     """
     Return emission string for CE backend.
@@ -231,7 +232,7 @@ def translate_emission(percentile):
     """
     if percentile == "hist":
         return "historical"
-    
+
     return "historical,rcp85" if USE_RCP85 else "historical,ssp585"
 
 

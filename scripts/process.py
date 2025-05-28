@@ -70,6 +70,6 @@ def process(
     rules = resolve_rules(csv, date_range, region, ensemble, sesh, thredds, log_level)
     json.dump(rules, sys.stdout)
 
-    
+
 if __name__ == "__main__":
     process()

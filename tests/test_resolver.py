@@ -171,7 +171,6 @@ def test_resolve_rules_local(
     assert rules == expected_rules
 
 
-
 def test_mock_urls(mock_thredds_url_root, mock_urls, requests_mock):
     base_path_tasmin = "/storage/data/climate/downscale/MBCn/PCIC-Blend/Derived/monthly/climatologies/tasmin_seasonal_average_Climatology_PCIC-Blend_Observations_v1_1981-2010.nc"
     base_path_tasmax = "/storage/data/climate/downscale/MBCn/PCIC-Blend/Derived/monthly/climatologies/tasmax_seasonal_average_Climatology_PCIC-Blend_Observations_v1_1981-2010.nc"
@@ -180,10 +179,8 @@ def test_mock_urls(mock_thredds_url_root, mock_urls, requests_mock):
     fileserver_path_tasmin = fileserver_base_url + base_path_tasmin
     fileserver_path_tasmax = fileserver_base_url + base_path_tasmax
 
-
     requests_mock.get(fileserver_path_tasmin, content=tasmin_data)
     requests_mock.get(fileserver_path_tasmax, content=tasmax_data)
 
     assert requests.get(fileserver_path_tasmin).content == tasmin_data
     assert requests.get(fileserver_path_tasmax).content == tasmax_data
-
