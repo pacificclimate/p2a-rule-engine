@@ -1732,15 +1732,17 @@ files = [
 
 [[package]]
 name = "sly"
-version = "0.5"
-description = "\"SLY - Sly Lex Yacc\""
+version = "0.4"
+description = "SLY - Sly Lex Yacc"
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "sly-0.5-py3-none-any.whl", hash = "sha256:20485483259eec7f6ba85ff4d2e96a4e50c6621902667fc2695cc8bc2a3e5133"},
-    {file = "sly-0.5.tar.gz", hash = "sha256:251d42015e8507158aec2164f06035df4a82b0314ce6450f457d7125e7649024"},
+    {file = "sly-0.4.tar.gz", hash = "sha256:e5f2266a231322cc17519fbc3a3ba1c6335fed5a9a55abe0e598a35aea0ac32a"},
 ]
+
+[package.extras]
+test = ["pytest", "regex"]
 
 [[package]]
 name = "snuggs"
@@ -1974,4 +1976,4 @@ test = ["black", "mock", "pre_commit", "pytest", "pytest_cov", "requests_mock"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10, <4"
-content-hash = "dbc50ac490acd8c089114ae545cf857d4e248e12cfe11fcd89deb06b19a74461"
+content-hash = "8872c61c9dae63d6f90c8ad6440bea07bd0d1ddd4fa69927a4f19fe8a6a8a9ee"
