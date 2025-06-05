@@ -175,24 +175,23 @@ files = [
 ]
 
 [[package]]
-name = "cf-cell-methods"
+name = "cf_cell_methods"
 version = "0.1.0"
 description = "Automated processing of CF Conventions cell_methods metadata content"
 optional = false
 python-versions = "*"
 groups = ["main"]
-files = [
-    {file = "cf_cell_methods-0.1.0-py3-none-any.whl", hash = "sha256:80ac14f8833f3fe2ccebef34ec01a6f987048664377daa9623513374a88e86d6"},
-    {file = "cf_cell_methods-0.1.0.tar.gz", hash = "sha256:633ca3b8e93db09c3f8a93def7c3cd896933c7e63ddfac748357ef2c285bdb8c"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 sly = "*"
 
 [package.source]
-type = "legacy"
-url = "https://pypi.pacificclimate.org/simple"
-reference = "pcic"
+type = "git"
+url = "https://github.com/pacificclimate/cf-cell-methods.git"
+reference = "i7-handle-parsing-errors"
+resolved_reference = "1b939a84dd74b08f15ebbd83c30b69440d1e0431"
 
 [[package]]
 name = "cfgv"
@@ -1975,4 +1974,4 @@ test = ["black", "mock", "pre_commit", "pytest", "pytest_cov", "requests_mock"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10, <4"
-content-hash = "f67d0dc381f603a6564f81d1051e95c98b635020150a2e0d08824cb3045a1280"
+content-hash = "dbc50ac490acd8c089114ae545cf857d4e248e12cfe11fcd89deb06b19a74461"
