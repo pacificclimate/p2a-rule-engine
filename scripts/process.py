@@ -43,7 +43,7 @@ from p2a_impacts.utils import get_region, REGIONS, create_session
     "-e",
     "--ensemble",
     help="Ensemble name filter for data files",
-    default="p2a_rules",
+    default="p2a_rules_cmip6_mbcn",
 )
 @click.option(
     "-t",
