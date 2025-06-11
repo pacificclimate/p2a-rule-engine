@@ -48,11 +48,16 @@ def filter_by_period(target, dates, periods):
         for date in dates:
             if date in key:
                 try:
+                    logger.debug(f"[filter_by_period] periods[{key}] = {periods[key]}")
+
                     return periods[key][target]
                 except KeyError as e:
-                    logger.exception(
-                        f"[filter_by_period] Missing target '{target}' in {key}"
+                    logger.warning(
+                        f"[filter_by_period] KeyError: target '{target}' not in periods[{key}]. Available keys: {list(periods[key].keys())}"
                     )
+    logger.warning(
+        f"[filter_by_period] No match found for dates {dates} in keys {list(periods.keys())}"
+    )
 
 
 def get_nffd(fd, time, timescale, calendar="standard"):
@@ -241,7 +246,7 @@ def translate_date(percentile, date_range):
     equivalent dates.
     """
     dates = {
-        "hist": ["19810101-20101231"],
+        "hist": ["19810101-20101231", "19810101-20110101","1981-2010"],
         "2030": ["20210101-20501231"],
         "2050": ["20410101-20701231", "20400101-20691231"],
         "2080": ["20710101-21001231", "20700101-20991231"],

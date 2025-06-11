@@ -37,7 +37,9 @@ def create_modelmeta_objects():
 
     # Ensembles
 
-    p2a_rules = Ensemble(name="p2a_rules", version=1.0, changes="", description="")
+    p2a_rules = Ensemble(
+        name="p2a_rules_cmip6_mbcn", version=1.0, changes="", description=""
+    )
     ensembles = [
         p2a_rules,
     ]
