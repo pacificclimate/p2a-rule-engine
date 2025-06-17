@@ -22,9 +22,9 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
 
-requires-python = ">=3.10, <4"
+requires-python = ">=3.11, <4"
 dependencies = [
-  "ce @ git+https://github.com/pacificclimate/climate-explorer-backend.git@py-sprint-25q1",
+  "ce @ git+https://github.com/pacificclimate/climate-explorer-backend.git@3.6.6#egg=ce",
   "GDAL>=3.3.0,<3.4",
   "cf_cell_methods>=0.1.0,<1.0.0",
   "contexttimer>=0.3.3,<1.0.0",
@@ -48,7 +48,7 @@ test = [
 
 [project.urls]
 homepage = "http://www.pacificclimate.org/"
-repository = "https://github.com/pacificclimate/wps-tools"
+repository = "https://github.com/pacificclimate/p2a-rule-engine"
 
 [[tool.poetry.source]]
 name = "pcic"
