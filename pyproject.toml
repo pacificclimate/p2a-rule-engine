@@ -24,7 +24,7 @@ classifiers = [
 
 requires-python = ">=3.11, <4"
 dependencies = [
-  "ce @ git+https://github.com/pacificclimate/climate-explorer-backend.git@3.6.6#egg=ce",
+  "ce>=3.6.6,<4.0.0",
   "GDAL>=3.3.0,<3.4",
   "cf_cell_methods>=0.1.0,<1.0.0",
   "contexttimer>=0.3.3,<1.0.0",

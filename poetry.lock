@@ -1757,4 +1757,4 @@ test = ["black", "mock", "pre_commit", "pytest", "pytest_cov", "requests_mock"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11, <4"
-content-hash = "958ac36efd2b7020f39ef3dd5b103d4971b9119fa4e0cee99557b136d1e68143"
+content-hash = "a928c0635aef9c04f0e7e77098a8272875318e6527d7156194d59c36ab170b8d"
