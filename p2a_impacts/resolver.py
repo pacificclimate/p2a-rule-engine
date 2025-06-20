@@ -68,7 +68,7 @@ def resolve_rules(csv, date_range, region, ensemble, sesh, thredds, log_level="I
 
     logger.info("")
     logger.info("{}/{} variables collected".format(len(collected_variables), var_count))
-    # logger.info("Vars: {}".format(collected_variables))
+    logger.debug("Vars: {}".format(collected_variables))
     # partially define dict accessor to abstract it for the evaluator
     variable_getter = partial(get_dict_val, collected_variables)
     rule_getter = partial(get_dict_val, parse_trees)
