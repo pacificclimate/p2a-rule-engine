@@ -128,13 +128,15 @@ files = [
 
 [[package]]
 name = "ce"
-version = "3.6.6"
+version = "3.6.7"
 description = "PCIC's Climate Explorer (CE)"
 optional = false
 python-versions = ">=3.11,<4"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "ce-3.6.7-py3-none-any.whl", hash = "sha256:c13abb357af46025dd8ba44c49ea8c41d7e15961da390b74ba794faf9268213f"},
+    {file = "ce-3.6.7.tar.gz", hash = "sha256:82520e49be8d171689e74827077c6569235b4237e96283bfdd7c72856ecbb747"},
+]
 
 [package.dependencies]
 cf-cell-methods = "0.1.0"
@@ -154,10 +156,9 @@ shapely = ">2.0,<3"
 SQLAlchemy = ">=2.0.40,<3.0.0"
 
 [package.source]
-type = "git"
-url = "https://github.com/pacificclimate/climate-explorer-backend.git"
-reference = "3.6.6"
-resolved_reference = "f170b9a464246cbf74db20ea4518e885ebf7c35c"
+type = "legacy"
+url = "https://pypi.pacificclimate.org/simple"
+reference = "pcic"
 
 [[package]]
 name = "certifi"
@@ -1757,4 +1758,4 @@ test = ["black", "mock", "pre_commit", "pytest", "pytest_cov", "requests_mock"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11, <4"
-content-hash = "a928c0635aef9c04f0e7e77098a8272875318e6527d7156194d59c36ab170b8d"
+content-hash = "a2b1a034c110f40ba7df3209bda8bdd7ed46bc3f813b9d000999407702f79d78"

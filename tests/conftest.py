@@ -178,7 +178,7 @@ def make_data_file_variable(
 def mock_thredds_url_root(monkeypatch):
     monkeypatch.setenv(
         "THREDDS_URL_ROOT",
-        "http://marble-dev01.pcic.uvic.ca/twitcher/ows/proxy/thredds/dodsC/datasets",
+        "https://marble-dev01.pcic.uvic.ca/twitcher/ows/proxy/thredds/dodsC/datasets",
     )
 
 

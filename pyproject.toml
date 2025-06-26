@@ -17,14 +17,14 @@ classifiers = [
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Topic :: Scientific/Engineering :: Atmospheric Science",
 ]
 
 requires-python = ">=3.11, <4"
 dependencies = [
-  "ce>=3.6.6,<4.0.0",
+  "ce>=3.6.7,<4.0.0",
   "GDAL>=3.3.0,<3.4",
   "cf_cell_methods>=0.1.0,<1.0.0",
   "contexttimer>=0.3.3,<1.0.0",
