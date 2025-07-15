@@ -31,6 +31,8 @@ def test_mock_opendap_request(mock_opendap_request, mock_thredds_url_root):
     assert mock_opendap_request.call_count == 2
 
 
+@pytest.mark.online
+@pytest.mark.slow
 @pytest.mark.parametrize(
     ("csv", "date_range", "region", "geoserver", "ensemble", "thredds"),
     [
