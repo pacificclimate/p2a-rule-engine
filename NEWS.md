@@ -1,5 +1,11 @@
 # News / Release Notes
 
+## 0.5.0
+*4-November-2025*
+
+* Maintenance updates [#41](https://github.com/pacificclimate/p2a-rule-engine/pull/41)
+
+
 ## 0.4.0
 
 *4-November-2020*

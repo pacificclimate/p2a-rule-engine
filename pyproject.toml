@@ -5,9 +5,12 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "p2a_impacts"
-version = "0.4.0"
+version = "0.5.0"
 description = "Climate impacts engine for Plan2Adapt.ca"
-authors = [{ name = "Nikola Rados", email = "nrados@uvic.ca" }]
+authors = [
+  { name = "Nikola Rados", email = "nrados@uvic.ca" },
+  { name = "Quintin Sparks", email = "quintins@uvic.ca" },
+]
 license = { text = "GNU General Public License v3 (GPLv3)" }
 readme = "README.md"
 classifiers = [
