@@ -1,41 +1,15 @@
 name: Black
-
 on: push
 
 jobs:
   black:
     runs-on: ubuntu-24.04
-
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5 # Python ≥3.11 required for use_pyproject
         with:
           python-version: "3.12"
-
-      - name: Install Poetry (optional)
-        run: pip install poetry
-
-      - name: Install Black based on pyproject.toml
-        run: |
-          black_spec=$(python -c '
-          import tomllib
-          with open("pyproject.toml", "rb") as f:
-              data = tomllib.load(f)
-          project = data.get("project", {})
-          for dep in project.get("dependencies", []):
-              if dep.startswith("black"):
-                  print(dep)
-                  exit()
-          for group, deps in project.get("optional-dependencies", {}).items():
-              for dep in deps:
-                  if dep.startswith("black"):
-                      print(dep)
-                      exit()
-          exit(1)
-          ')
-              echo "Installing black: $black_spec"
-              pip install "$black_spec"
-
-      - name: Run Black check
-        run: black --check .
+      - uses: psf/black@stable
+        with:
+          use_pyproject: true
+          options: "--check"

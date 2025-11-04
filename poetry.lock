@@ -1291,6 +1291,22 @@ pytest = ">=4.6"
 testing = ["fields", "hunter", "process-tests", "pytest-xdist", "virtualenv"]
 
 [[package]]
+name = "pytest-socket"
+version = "0.7.0"
+description = "Pytest Plugin to disable socket calls during tests"
+optional = true
+python-versions = ">=3.8,<4.0"
+groups = ["main"]
+markers = "extra == \"test\""
+files = [
+    {file = "pytest_socket-0.7.0-py3-none-any.whl", hash = "sha256:7e0f4642177d55d317bbd58fc68c6bd9048d6eadb2d46a89307fa9221336ce45"},
+    {file = "pytest_socket-0.7.0.tar.gz", hash = "sha256:71ab048cbbcb085c15a4423b73b619a8b35d6a307f46f78ea46be51b1b7e11b3"},
+]
+
+[package.dependencies]
+pytest = ">=6.2.5"
+
+[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 description = "Extensions to the standard Python datetime module"
@@ -1753,9 +1769,9 @@ MarkupSafe = ">=2.1.1"
 watchdog = ["watchdog (>=2.3)"]
 
 [extras]
-test = ["black", "mock", "pre_commit", "pytest", "pytest_cov", "requests_mock"]
+test = ["black", "mock", "pre_commit", "pytest", "pytest-socket", "pytest_cov", "requests_mock"]
 
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11, <4"
-content-hash = "a2b1a034c110f40ba7df3209bda8bdd7ed46bc3f813b9d000999407702f79d78"
+content-hash = "34d42240a3995fdc7f38da0d4397f7c8f23c09843bb7a0ae395b88b95ae25fe2"
