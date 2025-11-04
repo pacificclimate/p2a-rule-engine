@@ -6,7 +6,7 @@ import logging
 from ce.api.models import models
 from ce.api.multistats import multistats
 
-
+csv.field_size_limit(1_000_000)
 logger = logging.getLogger("scripts")
 
 
@@ -48,9 +48,16 @@ def filter_by_period(target, dates, periods):
         for date in dates:
             if date in key:
                 try:
+                    logger.debug(f"[filter_by_period] periods[{key}] = {periods[key]}")
+
                     return periods[key][target]
                 except KeyError as e:
-                    logger.exception("Bad target variable: %s", target)
+                    logger.warning(
+                        f"[filter_by_period] KeyError: target '{target}' not in periods[{key}]. Available keys: {list(periods[key].keys())}"
+                    )
+    logger.warning(
+        f"[filter_by_period] No match found for dates {dates} in keys {list(periods.keys())}"
+    )
 
 
 def get_nffd(fd, time, timescale, calendar="standard"):
@@ -117,7 +124,7 @@ def query_backend(sesh, model, query_args):
                 area=query_args["area"],
                 variable=var,
                 timescale=query_args["timescale"],
-                cell_method=query_args["cell_method"],
+                climatological_statistic=query_args["cell_method"],
                 is_thredds=query_args["thredds"],
             ),
         )
@@ -127,7 +134,7 @@ def query_backend(sesh, model, query_args):
 
 def get_models(sesh, hist_var, ensemble):
     """Return a list of models needed to compute the percentile"""
-    historical_baseline = "anusplin"
+    historical_baseline = "PCIC_BLEND_v1"
     if hist_var == "hist":
         return [historical_baseline]
     else:
@@ -149,8 +156,8 @@ translate_variable = translate_names(
         "temp": ["tasmin", "tasmax"],
         "prec": ["pr"],
         "dg05": ["gdd"],
-        "nffd": ["fdETCCDI"],
-        "pass": ["prsn"],
+        "nffd": ["ffd"],
+        "pass": ["snow"],
         "dl18": ["hdd"],
     }
 )
@@ -219,22 +226,19 @@ translate_percentile = translate_names({"e25p": 25, "e75p": 75, "hist": 100})
 """Given a percentile component, translate it to the CE equivalent"""
 
 
-def translate_emission(percentile, variable):
-    """Given emission and variable components, translate them into the CE
-    equivalent emission.
+USE_RCP85 = False  # or True for test
+
+
+def translate_emission(percentile):
     """
-    emissions = {
-        ("temp", "prec", "dg05", "pass", "dl18"): "historical,rcp85",
-        ("nffd"): "historical, rcp85",
-        ("hist"): "",  # historical has no emission scenario
-    }
-
+    Return emission string for CE backend.
+    - percentile 'hist' has no emission scenario
+    - otherwise, use scenario depending on global USE_RCP85 flag
+    """
     if percentile == "hist":
-        emission = percentile
-    else:
-        emission = variable
+        return "historical"
 
-    return next(scenario for var, scenario in emissions.items() if emission in var)
+    return "historical,rcp85" if USE_RCP85 else "historical,ssp585"
 
 
 def translate_date(percentile, date_range):
@@ -242,10 +246,10 @@ def translate_date(percentile, date_range):
     equivalent dates.
     """
     dates = {
-        "hist": ["19610101-19901231", "19710101-20001231"],
-        "2020": ["20100101-20391231", "20110101-20400101", "20100101-20391230"],
-        "2050": ["20400101-20691231", "20410101-20700101", "20400101-20691230"],
-        "2080": ["20700101-20991231", "20710101-21000101", "20700101-20991230"],
+        "hist": ["19810101-20101231", "19810101-20110101", "1981-2010"],
+        "2030": ["20210101-20501231"],
+        "2050": ["20410101-20701231", "20400101-20691231"],
+        "2080": ["20710101-21001231", "20700101-20991231"],
     }
 
     if percentile == "hist":
@@ -277,7 +281,7 @@ def translate_args(
         "cell_method": translate_temporal(temporal),
         "spatial": translate_spatial(spatial),
         "percentile": translate_percentile(percentile),
-        "emission": translate_emission(percentile, variable),
+        "emission": translate_emission(percentile),
         "area": area["the_geom"],
         "dates": translate_date(percentile, date_range),
         "ensemble_name": ensemble,

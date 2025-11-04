@@ -1,5 +1,5 @@
 import pytest
-from pkg_resources import resource_filename
+from importlib.resources import files
 
 from p2a_impacts.fetch_data import (
     read_csv,
@@ -46,7 +46,7 @@ from p2a_impacts.fetch_data import (
     ],
 )
 def test_read_csv(expected_rules, expected_conds):
-    rules = read_csv(resource_filename("tests", "data/rules-test.csv"))
+    rules = read_csv((files("tests") / "data/rules-multi-var.csv").resolve())
     for rule, cond in rules.items():
         assert rule in expected_rules
         assert cond in expected_conds
@@ -55,7 +55,7 @@ def test_read_csv(expected_rules, expected_conds):
 @pytest.mark.parametrize(
     ("target", "dates", "expected"),
     [
-        ("mean", ["20100101-20391231", "20110101-20400101", "20100101-20391230"], 1),
+        ("mean", ["20200101-20491231", "20210101-20500101", "20200101-20491230"], 1),
         ("min", ["20400101-20691231"], 1),
         ("max", ["20700101-20991231"], 10),
     ],
@@ -106,7 +106,7 @@ def test_filter_by_period_bad_vars(target, dates, ce_response):
             49.13500260581219,-122.50579833984375
             49.31079887964633,-122.70904541015625 49.31438004800689))"""
             },
-            "2020",
+            "2030",
             "p2a_files",
             True,
             {
@@ -114,7 +114,7 @@ def test_filter_by_period_bad_vars(target, dates, ce_response):
                 "cell_method": "mean",
                 "spatial": "mean",
                 "percentile": 25,
-                "emission": "historical,rcp85",
+                "emission": "historical,ssp585",
                 "time": 0,
                 "timescale": "seasonal",
                 "area": """POLYGON((-122.70904541015625 49.31438004800689,
@@ -127,9 +127,7 @@ def test_filter_by_period_bad_vars(target, dates, ce_response):
             49.13500260581219,-122.50579833984375
             49.31079887964633,-122.70904541015625 49.31438004800689))""",
                 "dates": [
-                    "20100101-20391231",
-                    "20110101-20400101",
-                    "20100101-20391230",
+                    "20210101-20501231",
                 ],
                 "ensemble_name": "p2a_files",
                 "thredds": True,
@@ -179,7 +177,10 @@ def test_get_nffd(fd, time, timescale, expected):
 
 
 @pytest.mark.parametrize(
-    ("fd", "time", "timescale", "calendar"), [(50, 0, "seasonal", "not implemented"),],
+    ("fd", "time", "timescale", "calendar"),
+    [
+        (50, 0, "seasonal", "not implemented"),
+    ],
 )
 def test_get_nffd_bad_calendar(fd, time, timescale, calendar):
     with pytest.raises(NotImplementedError) as e:

@@ -24,8 +24,8 @@ from p2a_impacts.fetch_data import (
     "-d",
     "--date-range",
     help="30 year period for data",
-    default=["2020", "2050", "2080"],
-    type=click.Choice(["2020", "2050", "2080"]),
+    default=["2030", "2050", "2080"],
+    type=click.Choice(["2030", "2050", "2080"]),
     multiple=True,
 )
 @click.option(
@@ -39,7 +39,7 @@ from p2a_impacts.fetch_data import (
     "-u",
     "--url",
     help="Geoserver URL",
-    default="http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows",
+    default="https://beehive.pacificclimate.org/plan2adapt/bc_regions/ows",
 )
 @click.option(
     "-x",
@@ -51,7 +51,10 @@ from p2a_impacts.fetch_data import (
     "-e", "--ensemble", help="Ensemble name filter for data files", default="p2a_rules"
 )
 @click.option(
-    "-t", "--thredds", help="Target data from thredds server", is_flag=True,
+    "-t",
+    "--thredds",
+    help="Target data from thredds server",
+    is_flag=True,
 )
 @click.option("-f", "--output_file", help="Path to output file", default="output.txt")
 @click.option(
@@ -127,8 +130,7 @@ def file_collection(
 
 
 def get_paths_by_var(sesh, variables, ensemble, date_range, region, thredds, logger):
-    """Given a variable name get the required file's path by querying the CE backend.
-    """
+    """Given a variable name get the required file's path by querying the CE backend."""
     logger.info("")
     logger.info("Translating variables for query")
     query_args = translate_args(
@@ -175,7 +177,7 @@ def query_files(sesh, model, query_args):
             time=query_args["time"],
             variable=var,
             timescale=query_args["timescale"],
-            cell_method=query_args["cell_method"],
+            climatological_statistic=query_args["cell_method"],
         )
         for var in query_args["variable"]
     ]

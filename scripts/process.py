@@ -2,6 +2,7 @@
 The purpose of this script is to run the rule resolver with some parameters
 that could be expected from the p2a front end.
 """
+
 import sys
 import click
 import json
@@ -16,7 +17,7 @@ from p2a_impacts.utils import get_region, REGIONS, create_session
     "-d",
     "--date-range",
     help="30 year period for data",
-    type=click.Choice(["hist", "2020", "2050", "2080"]),
+    type=click.Choice(["hist", "2030", "2050", "2080"]),
     default="2080",
 )
 @click.option(
@@ -30,7 +31,7 @@ from p2a_impacts.utils import get_region, REGIONS, create_session
     "-u",
     "--url",
     help="Geoserver URL",
-    default="http://docker-dev01.pcic.uvic.ca:30123/geoserver/bc_regions/ows",
+    default="https://beehive.pacificclimate.org/geoserver/bc_regions/ows",
 )
 @click.option(
     "-x",
@@ -39,10 +40,16 @@ from p2a_impacts.utils import get_region, REGIONS, create_session
     default="postgresql://ce_meta_ro@db3.pcic.uvic.ca/ce_meta_12f290b63791",
 )
 @click.option(
-    "-e", "--ensemble", help="Ensemble name filter for data files", default="p2a_rules",
+    "-e",
+    "--ensemble",
+    help="Ensemble name filter for data files",
+    default="p2a_rules_cmip6_mbcn",
 )
 @click.option(
-    "-t", "--thredds", help="Target data from thredds server", is_flag=True,
+    "-t",
+    "--thredds",
+    help="Target data from thredds server",
+    is_flag=True,
 )
 @click.option(
     "-l",

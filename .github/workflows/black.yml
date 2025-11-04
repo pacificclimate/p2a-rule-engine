@@ -1,0 +1,15 @@
+name: Black
+on: push
+
+jobs:
+  black:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5 # Python ≥3.11 required for use_pyproject
+        with:
+          python-version: "3.12"
+      - uses: psf/black@stable
+        with:
+          use_pyproject: true
+          options: "--check"

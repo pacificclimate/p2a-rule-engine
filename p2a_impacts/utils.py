@@ -4,6 +4,8 @@ import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+csv.field_size_limit(1_000_000)
+
 REGIONS = {
     "bc": "British Columbia",
     "alberni_clayoquot": "Alberni-Clayoquot",
@@ -57,6 +59,48 @@ REGIONS = {
     "south_coast": "South Coast",
     "thompson_okanagan": "Thompson / Okanagan",
     "west_coast": "West Coast",
+    "vic_test": "Vic Test",
+    "algonquian": "Algonquian",
+    "athabaskan-eyak-tlingit": "Athabaskan-Eyak-Tlingit",
+    "coast_salish": "Coast Salish",
+    "haida": "Haida",
+    "interior_salish": "Interior Salish",
+    "ktunaxa": "Ktunaxa",
+    "tsimshianic": "Tsimshianic",
+    "wakashan": "Wakashan",
+    "babine-witsuwiten": "Babine-Witsuwit'en",
+    "beaver_dene": "Beaver Dene",
+    "bella_bella": "Bella Bella",
+    "bella_coola": "Bella Coola",
+    "carrier_dene": "Carrier Dene",
+    "chilcotin": "Chilcotin",
+    "coast_tsimshian": "Coast Tsimshian",
+    "comox-sliammon": "Comox-Sliammon",
+    "ditidaht": "Ditidaht",
+    "gitksan": "Gitksan",
+    "halkomelem": "Halkomelem",
+    "inland_tlingit": "Inland Tlingit",
+    "kaska_dene": "Kaska Dene",
+    "kitimat": "Kitimat",
+    "kootenay": "Kootenay",
+    "kwakiutl": "Kwakiutl",
+    "lake_babine_nadoten": "Lake Babine Nadot’en",
+    "lillooet": "Lillooet",
+    "nishga": "Nishga",
+    "northern_straits_salish": "Northern Straits Salish",
+    "nuu-chah-nulth": "Nuu-chah-nulth",
+    "okanagan": "Okanagan",
+    "oweekala": "Oweek’ala",
+    "plains_cree": "Plains Cree",
+    "sechelt": "Sechelt",
+    "sekani": "Sekani",
+    "shuswap": "Shuswap",
+    "slavey": "Slavey",
+    "southern_tutchone": "Southern Tutchone",
+    "squamish": "Squamish",
+    "tahltan": "Tahltan",
+    "thompson": "Thompson",
+    "tlingit": "Tlingit",
 }
 
 
@@ -79,7 +123,7 @@ def get_region(region_name, url):
         "service": "WFS",
         "version": "1.0.0",
         "request": "GetFeature",
-        "typename": "bc_regions:bc-regions-polygon",
+        "typename": "bc_regions:BC-regions-FNLF-84",
         "maxFeatures": "100",
         "outputFormat": "csv",
     }
